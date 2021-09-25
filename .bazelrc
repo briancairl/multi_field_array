@@ -1,0 +1,3 @@
+build --cxxopt='-std=c++17'
+build --cxxopt='-Wall'
+build --repo_env=CC=gcc
