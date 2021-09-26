@@ -1,9 +1,9 @@
 cc_test(
-  name="tuple_for_each",
+  name="mf",
   timeout = "short",
-  srcs=["tuple_for_each.cpp"],
+  srcs=["mf.cpp"],
   deps=[
-    "//:support",
+    "//:mf",
     "@googletest//:gtest",
   ],
   visibility=["//visibility:public"],

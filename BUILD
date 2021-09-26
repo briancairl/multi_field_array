@@ -10,4 +10,7 @@ cc_library(
   hdrs=["include/mf/mf.hpp"],
   strip_include_prefix="include",
   visibility=["//visibility:public"],
+  deps=[
+    ":support"
+  ]
 )
