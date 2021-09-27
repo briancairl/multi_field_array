@@ -1,7 +1,7 @@
 cc_test(
-  name="mf",
+  name="multi_field_array",
   timeout = "short",
-  srcs=["mf.cpp"],
+  srcs=["multi_field_array.cpp"],
   deps=[
     "//:mf",
     "@googletest//:gtest",

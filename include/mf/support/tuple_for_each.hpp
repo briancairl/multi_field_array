@@ -16,14 +16,16 @@ namespace detail
 template <typename TupleT, typename UnaryCallbackT, std::size_t... Indices>
 inline int tuple_for_each(TupleT&& tup, UnaryCallbackT&& unary_cb, std::index_sequence<Indices...> _)
 {
-  return ((unary_cb(std::get<Indices>(tup)), 1) + ...);
+  return ((unary_cb(std::get<Indices>(std::forward<TupleT>(tup))), 1) + ...);
 }
 
 template <typename Tuple1T, typename Tuple2T, typename BinaryCallbackT, std::size_t... Indices>
 inline int
 tuple_for_each(Tuple1T&& tup1, Tuple2T&& tup2, BinaryCallbackT&& binary_cb, std::index_sequence<Indices...> _)
 {
-  return ((binary_cb(std::get<Indices>(tup1), std::get<Indices>(tup2)), 1) + ...);
+  return (
+    (binary_cb(std::get<Indices>(std::forward<Tuple1T>(tup1)), std::get<Indices>(std::forward<Tuple2T>(tup2))), 1) +
+    ...);
 }
 
 }  // namespace detail

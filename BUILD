@@ -7,7 +7,11 @@ cc_library(
 
 cc_library(
   name="mf",
-  hdrs=["include/mf/mf.hpp"],
+  hdrs=[
+    "include/mf/multi_field_array.hpp",
+    "include/mf/multi_field_array_fwd.hpp",
+    "include/mf/multi_field_array_view.hpp"
+  ],
   strip_include_prefix="include",
   visibility=["//visibility:public"],
   deps=[
