@@ -5,103 +5,47 @@
 #pragma once
 
 // C++ Standard Library
-#include <iterator>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 // MF
 #include <mf/multi_field_array_fwd.hpp>
-#include <mf/support/tuple_dereference.hpp>
 #include <mf/support/tuple_for_each.hpp>
+#include <mf/support/tuple_ref.hpp>
+#include <mf/zip_iterator.hpp>
 
 namespace mf
 {
 
 /**
- * @brief Iterates over multiple fields of a MultiFieldArray
- */
-template <typename... Ts> class MultiFieldArrayIterator<Fields<Ts...>>
-{
-public:
-  inline bool operator==(const MultiFieldArrayIterator& other) const
-  {
-    return std::get<0>(this->ptr_) == std::get<0>(other.ptr_);
-  }
-
-  inline bool operator!=(const MultiFieldArrayIterator& other) const { return !this->operator==(other); }
-
-  inline bool operator<(const MultiFieldArrayIterator& other) const
-  {
-    return std::get<0>(this->ptr_) < std::get<0>(other.ptr_);
-  }
-
-  inline bool operator>(const MultiFieldArrayIterator& other) const
-  {
-    return std::get<0>(this->ptr_) > std::get<0>(other.ptr_);
-  }
-
-  inline bool operator<=(const MultiFieldArrayIterator& other) const
-  {
-    return this->operator==(other) or this->operator<(other);
-  }
-
-  inline bool operator>=(const MultiFieldArrayIterator& other) const
-  {
-    return this->operator==(other) or this->operator>(other);
-  }
-
-  inline MultiFieldArrayIterator& operator=(const MultiFieldArrayIterator& other)
-  {
-    this->ptr_ = other.ptr_;
-    return *this;
-  }
-
-  inline MultiFieldArrayIterator& operator++()
-  {
-    tuple_for_each(ptr_, [](auto& ptr) { ++ptr; });
-    return *this;
-  }
-
-  inline MultiFieldArrayIterator operator++(int)
-  {
-    MultiFieldArrayIterator prev{*this};
-    tuple_for_each(ptr_, [](auto& ptr) { ++ptr; });
-    return prev;
-  }
-
-  inline auto operator*() { return tuple_dereference(ptr_); }
-
-private:
-  template <typename FieldTs> friend class MultiFieldArrayView;
-
-  explicit MultiFieldArrayIterator(const std::tuple<Ts*...>& other_ptr) : ptr_{other_ptr} {}
-
-  MultiFieldArrayIterator(const MultiFieldArrayIterator& other) : MultiFieldArrayIterator{other.ptr_} {}
-
-  std::tuple<Ts*...> ptr_;
-};
-
-// TODO(enhancment) Need a version which works for const containers
-
-
-/**
  * @brief Mutable view helper used for iterating over a subset of the field types of a MultiFieldArray
  */
-template <typename... Ts> class MultiFieldArrayView<Fields<Ts...>>
+template <typename... Ts> class MultiFieldArrayView<std::tuple<Ts...>>
 {
 public:
-  inline MultiFieldArrayIterator<Fields<Ts...>> begin() { return MultiFieldArrayIterator<Fields<Ts...>>{data_}; }
+  inline ZipIterator<std::tuple<Ts*...>> begin() { return ZipIterator<std::tuple<Ts*...>>{data_}; }
 
-  inline MultiFieldArrayIterator<Fields<Ts...>> end()
+  inline ZipIterator<std::tuple<Ts*...>> end()
   {
     auto data_last = data_;
     tuple_for_each(data_last, [s = size_](auto& ptr) { ptr += s; });
-    return MultiFieldArrayIterator<Fields<Ts...>>{data_last};
+    return ZipIterator<std::tuple<Ts*...>>{data_last};
   }
 
+  inline ZipIterator<std::tuple<const Ts*...>> begin() const { return ZipIterator<std::tuple<const Ts*...>>{data_}; }
+
+  inline ZipIterator<std::tuple<const Ts*...>> end() const
+  {
+    auto data_last = data_;
+    tuple_for_each(data_last, [s = size_](auto& ptr) { ptr += s; });
+    return ZipIterator<std::tuple<const Ts*...>>{data_last};
+  }
+
+  inline std::size_t size() const { return size_; }
+
 private:
-  template <typename FieldTs, typename AllocatorT> friend class MultiFieldArray;
+  template <typename FieldTs, typename AllocatorTs> friend class BasicMultiFieldArray;
 
   MultiFieldArrayView(const std::tuple<Ts*...>& data, const std::size_t size) : data_{data}, size_{size} {}
 

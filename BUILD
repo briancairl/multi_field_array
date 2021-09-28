@@ -10,7 +10,8 @@ cc_library(
   hdrs=[
     "include/mf/multi_field_array.hpp",
     "include/mf/multi_field_array_fwd.hpp",
-    "include/mf/multi_field_array_view.hpp"
+    "include/mf/multi_field_array_view.hpp",
+    "include/mf/zip_iterator.hpp"
   ],
   strip_include_prefix="include",
   visibility=["//visibility:public"],
