@@ -113,4 +113,4 @@ For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://gi
 - [ ] Add `CMake` build configuration
 - [ ] Add `CMake` CI step
 - [ ] Add Doxygen documentation page releases
-- [ ] Adds benchmark tests
+- [x] Add benchmark tests

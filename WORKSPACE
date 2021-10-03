@@ -10,3 +10,12 @@ http_archive(
     strip_prefix="googletest-release-1.8.0",
     build_file="@//external:googletest.BUILD",
 )
+
+# Google Benchmark
+http_archive(
+    name="googlebenchmark",
+    url="https://github.com/google/benchmark/archive/refs/tags/v1.6.0.zip",
+    sha256="3da225763533aa179af8438e994842be5ca72e4a7fed4d7976dc66c8c4502f58",
+    strip_prefix="benchmark-1.6.0",
+    build_file="@//external:googlebenchmark.BUILD"
+)
