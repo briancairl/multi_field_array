@@ -5,6 +5,7 @@
 #pragma once
 
 // C++ Standard Library
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -66,6 +67,40 @@ public:
   inline auto operator[](const std::size_t pos) const
   {
     MF_ASSERT(pos >= 0 and pos < size_);
+    auto data_at_pos = data_;
+    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    return tuple_dereference(data_at_pos);
+  }
+
+  /**
+   * @brief Returns a reference to the element at specified location \c pos. Bounds checking is performed.
+   *
+   * @param pos  element position
+   *
+   * @return reference to element at \c pos
+   *
+   * @throws \c std::out_of_range  if \c pos exceeds bounds of the view
+   */
+  inline auto at(const std::size_t pos)
+  {
+    if (pos >= size_)
+    {
+      throw std::out_of_range{"'pos' exceeds valid range of view"};
+    }
+    auto data_at_pos = data_;
+    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    return tuple_dereference(data_at_pos);
+  }
+
+  /**
+   * @copydoc at
+   */
+  inline auto at(const std::size_t pos) const
+  {
+    if (pos >= size_)
+    {
+      throw std::out_of_range{"'pos' exceeds valid range of view"};
+    }
     auto data_at_pos = data_;
     tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
     return tuple_dereference(data_at_pos);

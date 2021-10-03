@@ -475,6 +475,48 @@ TEST(MultiFieldArray, ConstViewIndexing)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
+TEST(MultiFieldArray, ViewIndexingWithBoundsCheckValid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  const auto [int_ref, str_ref] = multi_field_array.view<int, std::string>().at(4);
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckValid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  const auto [int_ref, str_ref] = const_multi_field_array.view<int, std::string>().at(4);
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ViewIndexingWithBoundsCheckInvalid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  ASSERT_THROW((multi_field_array.view<int, std::string>().at(40)), std::out_of_range);
+}
+
+TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckInvalid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  ASSERT_THROW((const_multi_field_array.view<int, std::string>().at(40)), std::out_of_range);
+}
+
 TEST(MultiFieldArray, AllFieldIndexing)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
@@ -494,10 +536,52 @@ TEST(MultiFieldArray, ConstAllFieldIndexing)
   multi_field_array.get<int>(4) = 1;
   multi_field_array.get<std::string>(4) = "unacceptable!";
 
-  mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+  const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
 
   const auto [int_ref, str_ref] = const_multi_field_array[4];
 
   ASSERT_EQ(int_ref, 1);
   ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, AllFieldIndexingWithBoundsCheckValid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  const auto [int_ref, str_ref] = multi_field_array.at(4);
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstAllFieldIndexingWithBoundsCheckValid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  const auto [int_ref, str_ref] = const_multi_field_array.at(4);
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, AllFieldIndexingWithBoundsCheckInvalid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  ASSERT_THROW(multi_field_array.at(40), std::out_of_range);
+}
+
+TEST(MultiFieldArray, ConstAllFieldIndexingWithBoundsCheckInvalid)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  ASSERT_THROW(const_multi_field_array.at(40), std::out_of_range);
 }
