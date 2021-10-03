@@ -413,6 +413,16 @@ public:
   inline auto end() const { return view().end(); }
 
   /**
+   * @brief Returns first iterator which iterates over all field simulatenously
+   */
+  inline auto cbegin() const { return view().begin(); }
+
+  /**
+   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   */
+  inline auto cend() const { return view().end(); }
+
+  /**
    * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <std::size_t Index> inline auto* begin() { return std::get<Index>(data_); }
@@ -431,6 +441,16 @@ public:
    * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <typename ValueT> inline const ValueT* begin() const { return std::get<ValueT*>(data_); }
+
+  /**
+   * @brief Returns iterator (pointer) to first element in a particular field sub-array
+   */
+  template <std::size_t Index> inline const auto* cbegin() const { return std::get<Index>(data_); }
+
+  /**
+   * @brief Returns iterator (pointer) to first element in a particular field sub-array
+   */
+  template <typename ValueT> inline const ValueT* cbegin() const { return std::get<ValueT*>(data_); }
 
   /**
    * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
@@ -454,6 +474,22 @@ public:
    * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
    */
   template <typename ValueT> inline const ValueT* end() const
+  {
+    return BasicMultiFieldArray::template begin<ValueT>() + size_;
+  }
+
+  /**
+   * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
+   */
+  template <std::size_t Index> inline const auto* cend() const
+  {
+    return BasicMultiFieldArray::template begin<Index>() + size_;
+  }
+
+  /**
+   * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
+   */
+  template <typename ValueT> inline const ValueT* cend() const
   {
     return BasicMultiFieldArray::template begin<ValueT>() + size_;
   }

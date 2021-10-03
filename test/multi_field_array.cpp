@@ -271,6 +271,24 @@ TEST(MultiFieldArray, SingleFieldIteratorValueAssignmentByIndex)
   std::for_each(multi_field_array.begin<0>(), multi_field_array.end<0>(), [](const int v) { ASSERT_EQ(v, 3); });
 }
 
+TEST(MultiFieldArray, SingleFieldExplicitConstIteratorAccessByType)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array(10);
+
+  std::for_each(
+    multi_field_array.cbegin<std::string>(), multi_field_array.cend<std::string>(), [](const std::string& v) {
+      ASSERT_TRUE(v.empty());
+    });
+}
+
+TEST(MultiFieldArray, SingleFieldExplicitConstValueAccessByIndex)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array(10);
+
+  std::for_each(
+    multi_field_array.cbegin<2>(), multi_field_array.cend<2>(), [](const std::string& v) { ASSERT_TRUE(v.empty()); });
+}
+
 TEST(MultiFieldArray, MultiFieldViewIterationValueAssignmentByType)
 {
   mf::multi_field_array<float, int, std::string> multi_field_array(10);
@@ -415,4 +433,17 @@ TEST(MultiFieldArray, AllFieldIterationConst)
     ASSERT_TRUE(vec_field.empty());
     ASSERT_TRUE(str_field.empty());
   }
+}
+
+TEST(MultiFieldArray, AllFieldIterationExplicitConst)
+{
+  mf::multi_field_array<std::vector<int>, std::string> multi_field_array(10);
+
+  std::for_each(multi_field_array.cbegin(), multi_field_array.cend(), [](const auto& tuple_v) {
+    using TupleOfReferencesT = std::remove_reference_t<decltype(tuple_v)>;
+    ASSERT_TRUE((std::is_reference_v<std::tuple_element_t<0, TupleOfReferencesT>>));
+    ASSERT_TRUE((std::is_const_v<std::remove_reference_t<std::tuple_element_t<0, TupleOfReferencesT>>>));
+    ASSERT_TRUE((std::is_reference_v<std::tuple_element_t<1, TupleOfReferencesT>>));
+    ASSERT_TRUE((std::is_const_v<std::remove_reference_t<std::tuple_element_t<1, TupleOfReferencesT>>>));
+  });
 }
