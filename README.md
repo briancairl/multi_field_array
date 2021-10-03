@@ -112,3 +112,4 @@ For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://gi
 - [ ] Add "single allocation" strategy option, which will allocate all field memory at once, rather than with separate allocation calls
 - [ ] Add `CMake` build configuration
 - [ ] Add `CMake` CI step
+- [ ] Add Doxygen documentation page releases
