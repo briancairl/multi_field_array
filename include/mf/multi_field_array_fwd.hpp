@@ -4,16 +4,11 @@
  */
 #pragma once
 
-// C++ Standard Library
-#include <tuple>
-
 namespace mf
 {
 
-template <typename... Ts> using Fields = std::tuple<Ts...>;
-
-template <typename FieldTs> class MultiFieldArrayView;
-template <typename FieldTs> class MultiFieldArrayIterator;
-template <typename FieldTs, typename AllocatorT> class MultiFieldArray;
+template <typename FieldTs> class View;
+template <typename FieldTs, typename AllocatorTs> class BasicMultiFieldArray;
+template <typename FieldTs> class ZipIterator;
 
 }  // namespace mf
