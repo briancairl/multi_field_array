@@ -1,4 +1,4 @@
-[![Pull Request](https://github.com/briancairl/mf/actions/workflows/pr.yml/badge.svg?branch=main)](https://github.com/briancairl/mf/actions/workflows/pr.yml)
+[![Pull Request](https://github.com/briancairl/mf/actions/workflows/pr.yml/badge.svg)](https://github.com/briancairl/mf/actions/workflows/pr.yml)
 
 # MF : MultiFieldArray container library
 
