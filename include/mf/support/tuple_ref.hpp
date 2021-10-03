@@ -24,27 +24,25 @@ template <typename... Ts, template <typename> typename WrapperTmpl> struct tuple
 /**
  * @brief Returns a tuple of lvalue references from a tuple of pointers, which a dereferenced
  */
-template <typename TupleOfPointersT, std::size_t... Indices>
-inline auto tuple_dereference(TupleOfPointersT&& tup_of_ptr, std::index_sequence<Indices...> _)
+template <typename TupleOfIteratorsT, std::size_t... Indices>
+inline auto tuple_dereference(TupleOfIteratorsT&& tup_of_ptr, std::index_sequence<Indices...> _)
 {
   // Generate a tuple of reference types from original tuple of pointer types
 
   // clang-format off
-  using ReferenceTupleT =
+  using TupleOfReferencesT =
     std::tuple<
-      std::add_lvalue_reference_t<
-        typename std::iterator_traits<
-          std::tuple_element_t<
-            Indices,
-            std::remove_reference_t<TupleOfPointersT>
-          >
-        >::value_type
-      >...
+      typename std::iterator_traits<
+        std::tuple_element_t<
+          Indices,
+          std::remove_reference_t<TupleOfIteratorsT>
+        >
+      >::reference...
     >;
   // clang-format on
 
   // Pack references into tuple from dereferenced pointers
-  return ReferenceTupleT{(*std::get<Indices>(std::forward<TupleOfPointersT>(tup_of_ptr)))...};
+  return TupleOfReferencesT{(*std::get<Indices>(std::forward<TupleOfIteratorsT>(tup_of_ptr)))...};
 }
 
 }  // namespace detail
@@ -53,10 +51,10 @@ inline auto tuple_dereference(TupleOfPointersT&& tup_of_ptr, std::index_sequence
 /**
  * @copydoc detail::tuple_dereference
  */
-template <typename TupleOfPointersT> inline auto tuple_dereference(TupleOfPointersT&& tup_of_ptr)
+template <typename TupleOfIteratorsT> inline auto tuple_dereference(TupleOfIteratorsT&& tup_of_ptr)
 {
-  static constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<TupleOfPointersT>>;
-  return detail::tuple_dereference(std::forward<TupleOfPointersT>(tup_of_ptr), std::make_index_sequence<N>{});
+  static constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<TupleOfIteratorsT>>;
+  return detail::tuple_dereference(std::forward<TupleOfIteratorsT>(tup_of_ptr), std::make_index_sequence<N>{});
 }
 
 template <typename TupleT> using tuple_of_pointers = detail::tuple_wrap<TupleT, std::add_pointer>;

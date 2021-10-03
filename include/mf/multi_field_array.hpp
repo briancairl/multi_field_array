@@ -486,17 +486,17 @@ public:
   template <typename... ViewValueTs> MultiFieldArrayView<std::tuple<const ViewValueTs...>> view() const
   {
     return MultiFieldArrayView<std::tuple<const ViewValueTs...>>{
-      std::forward_as_tuple(const_cast<const ValueTs&>(std::get<ViewValueTs*>(data_))...), size_};
+      std::forward_as_tuple(const_cast<const ViewValueTs*>(std::get<ViewValueTs*>(data_))...), size_};
   }
 
   /**
    * @copydoc view
    */
-  // template <std::size_t... Indices> MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>> view() const
-  // {
-  //   return MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>>{
-  //     std::forward_as_tuple(std::get<Indices>(data_)...), size_};
-  // }
+  template <std::size_t... Indices> MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>> view() const
+  {
+    return MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>>{
+      std::forward_as_tuple(std::get<Indices>(data_)...), size_};
+  }
 
 private:
   /**
