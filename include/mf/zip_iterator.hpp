@@ -19,6 +19,50 @@ namespace mf
 {
 
 /**
+ * @brief Retrieves common \c iterator_category for a tuple of iterator-like types
+ */
+template <typename TupleOfIteratorsT> struct ZipIteratorCategory;
+
+/**
+ * @copydoc ZipIteratorCategory
+ */
+template <typename FirstIteratorT, typename SecondIteratorT, typename... OtherIteratorTs>
+struct ZipIteratorCategory<std::tuple<FirstIteratorT, SecondIteratorT, OtherIteratorTs...>>
+{
+  using iterator_category = std::conditional_t<
+    std::is_same_v<
+      typename std::iterator_traits<FirstIteratorT>::iterator_category,
+      typename std::iterator_traits<SecondIteratorT>::iterator_category>,
+    typename ZipIteratorCategory<std::tuple<SecondIteratorT, OtherIteratorTs...>>::iterator_category,
+    void  // cannot deduce common iterator_category
+    >;
+};
+
+/**
+ * @copydoc ZipIteratorCategory
+ */
+template <typename IteratorT> struct ZipIteratorCategory<std::tuple<IteratorT>>
+{
+  using iterator_category = typename std::iterator_traits<IteratorT>::iterator_category;
+};
+
+/**
+ * @copydoc ZipIteratorCategory
+ */
+template <> struct ZipIteratorCategory<std::tuple<>>
+{
+  using iterator_category = void;
+};
+
+/**
+ * @copydoc ZipIteratorCategory
+ *
+ *          Convenience alias
+ */
+template <typename TupleOfIteratorsT>
+using zip_iterator_category_t = typename ZipIteratorCategory<TupleOfIteratorsT>::iterator_category;
+
+/**
  * @brief Iterates over multiple iterators simultaneously
  */
 template <typename... IteratorTs> class ZipIterator<std::tuple<IteratorTs...>>
@@ -89,13 +133,16 @@ inline ZipIterator<std::tuple<std::remove_reference_t<IteratorTs>...>> make_zip_
 namespace std
 {
 
-template <typename ValueTupleT> struct iterator_traits<::mf::ZipIterator<ValueTupleT>>
+/**
+ * @brief Specialization of \c std::iterator_traits for a valid \c ZipIterator template instance
+ */
+template <typename TupleOfIteratorsT> struct iterator_traits<::mf::ZipIterator<TupleOfIteratorsT>>
 {
   using difference_type = std::ptrdiff_t;
-  using value_type = ValueTupleT;
-  using pointer = ::mf::tuple_of_pointers_t<ValueTupleT>;
-  using reference = ::mf::tuple_of_lvalue_references_t<ValueTupleT>;
-  using iterator_category = std::random_access_iterator_tag;
+  using value_type = TupleOfIteratorsT;
+  using pointer = ::mf::tuple_of_pointers_t<TupleOfIteratorsT>;
+  using reference = ::mf::tuple_of_lvalue_references_t<TupleOfIteratorsT>;
+  using iterator_category = ::mf::zip_iterator_category_t<TupleOfIteratorsT>;
 };
 
 }  // namespace std

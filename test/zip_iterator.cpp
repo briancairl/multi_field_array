@@ -5,6 +5,7 @@
 
 // C++ Standard Library
 #include <iterator>
+#include <list>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,7 @@
 // MF
 #include <mf/zip_iterator.hpp>
 
-TEST(MultiFieldArray, ForLoop)
+TEST(ZipIterator, ForLoop)
 {
   std::string s{"oooo"};
   std::vector<int> v{1, 1, 1, 1};
@@ -29,7 +30,7 @@ TEST(MultiFieldArray, ForLoop)
 }
 
 
-TEST(MultiFieldArray, ForLoopConst)
+TEST(ZipIterator, ForLoopConst)
 {
   const std::string s{"oooo"};
   const std::vector<int> v{1, 1, 1, 1};
@@ -41,4 +42,30 @@ TEST(MultiFieldArray, ForLoopConst)
     ASSERT_EQ(std::get<0>(*itr), 'o');
     ASSERT_EQ(std::get<1>(*itr), 1);
   }
+}
+
+TEST(ZipIterator, TraitsCommonIteratorCatagory)
+{
+  const std::string s{"oooo"};  // random access
+  const std::vector<int> v{1, 1, 1, 1};  // random access
+
+  auto zip_itr = mf::make_zip_iterator(s.begin(), v.begin());
+
+  ASSERT_TRUE((std::is_same_v<
+               std::iterator_traits<decltype(zip_itr)>::iterator_category,
+               std::iterator_traits<decltype(s.begin())>::iterator_category>));
+
+  ASSERT_TRUE((std::is_same_v<
+               std::iterator_traits<decltype(zip_itr)>::iterator_category,
+               std::iterator_traits<decltype(v.begin())>::iterator_category>));
+}
+
+TEST(ZipIterator, TraitsNoCommonIteratorCatagory)
+{
+  const std::string s{"oooo"};  // random access
+  const std::list<int> l{1, 1, 1, 1};  // bidirectional iterator access
+
+  auto zip_itr = mf::make_zip_iterator(s.begin(), l.begin());
+
+  ASSERT_TRUE((std::is_same_v<std::iterator_traits<decltype(zip_itr)>::iterator_category, void>));
 }
