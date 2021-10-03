@@ -11,7 +11,6 @@
 #include <utility>
 
 // MF
-#include <mf/multi_field_array_fwd.hpp>
 #include <mf/support/tuple_for_each.hpp>
 #include <mf/support/tuple_ref.hpp>
 
@@ -64,6 +63,11 @@ using zip_iterator_category_t = typename ZipIteratorCategory<TupleOfIteratorsT>:
 
 /**
  * @brief Iterates over multiple iterators simultaneously
+ */
+template <typename FieldTs> class ZipIterator;
+
+/**
+ * @copydoc ZipIterator
  */
 template <typename... IteratorTs> class ZipIterator<std::tuple<IteratorTs...>>
 {

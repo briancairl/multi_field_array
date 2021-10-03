@@ -6,15 +6,28 @@ cc_library(
 )
 
 cc_library(
-  name="mf",
+  name="zip_iterator",
   hdrs=[
-    "include/mf/multi_field_array.hpp",
-    "include/mf/multi_field_array_fwd.hpp",
     "include/mf/zip_iterator.hpp"
   ],
   strip_include_prefix="include",
   visibility=["//visibility:public"],
   deps=[
     ":support"
+  ]
+)
+
+cc_library(
+  name="mf",
+  hdrs=[
+    "include/mf/multi_allocator_adapter.hpp",
+    "include/mf/multi_field_array.hpp",
+    "include/mf/multi_field_array_fwd.hpp",
+  ],
+  strip_include_prefix="include",
+  visibility=["//visibility:public"],
+  deps=[
+    ":support",
+    ":zip_iterator"
   ]
 )

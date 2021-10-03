@@ -505,7 +505,7 @@ TEST(MultiFieldArray, AllFieldIterationExplicitConst)
   });
 }
 
-TEST(MultiFieldArray, ViewIndexing)
+TEST(MultiFieldArray, ViewPositionalAccess)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
@@ -514,11 +514,25 @@ TEST(MultiFieldArray, ViewIndexing)
 
   const auto [int_ref, str_ref] = multi_field_array.view<int, std::string>()[4];
 
+  ASSERT_TRUE(std::is_reference_v<decltype(int_ref)>);
+  ASSERT_TRUE(std::is_reference_v<decltype(str_ref)>);
   ASSERT_EQ(int_ref, 1);
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ConstViewIndexing)
+TEST(MultiFieldArray, ViewPositionalAssignment)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array.view<int, std::string>()[4] = std::forward_as_tuple(1, "unacceptable!");
+
+  const auto [int_ref, str_ref] = multi_field_array.view<int, std::string>()[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstViewPositionalAccess)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   multi_field_array.get<int>(4) = 1;
@@ -532,7 +546,7 @@ TEST(MultiFieldArray, ConstViewIndexing)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ViewIndexingWithBoundsCheckValid)
+TEST(MultiFieldArray, ViewPositionalAccessWithBoundsCheckValid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
@@ -545,7 +559,7 @@ TEST(MultiFieldArray, ViewIndexingWithBoundsCheckValid)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckValid)
+TEST(MultiFieldArray, ConstViewPositionalAccessWithBoundsCheckValid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   multi_field_array.get<int>(4) = 1;
@@ -559,14 +573,14 @@ TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckValid)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ViewIndexingWithBoundsCheckInvalid)
+TEST(MultiFieldArray, ViewPositionalAccessWithBoundsCheckInvalid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
   ASSERT_THROW((multi_field_array.view<int, std::string>().at(40)), std::out_of_range);
 }
 
-TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckInvalid)
+TEST(MultiFieldArray, ConstViewPositionalAccessWithBoundsCheckInvalid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
@@ -574,7 +588,7 @@ TEST(MultiFieldArray, ConstViewIndexingWithBoundsCheckInvalid)
   ASSERT_THROW((const_multi_field_array.view<int, std::string>().at(40)), std::out_of_range);
 }
 
-TEST(MultiFieldArray, AllFieldIndexing)
+TEST(MultiFieldArray, AllFieldPositionalAccess)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
@@ -583,11 +597,25 @@ TEST(MultiFieldArray, AllFieldIndexing)
 
   const auto [int_ref, str_ref] = multi_field_array[4];
 
+  ASSERT_TRUE(std::is_reference_v<decltype(int_ref)>);
+  ASSERT_TRUE(std::is_reference_v<decltype(str_ref)>);
   ASSERT_EQ(int_ref, 1);
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ConstAllFieldIndexing)
+TEST(MultiFieldArray, AllFieldPositionalAssignment)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array[4] = std::forward_as_tuple(1, "unacceptable!");
+
+  const auto [int_ref, str_ref] = multi_field_array[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstAllFieldPositionalAccess)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   multi_field_array.get<int>(4) = 1;
@@ -597,11 +625,13 @@ TEST(MultiFieldArray, ConstAllFieldIndexing)
 
   const auto [int_ref, str_ref] = const_multi_field_array[4];
 
+  ASSERT_TRUE(std::is_reference_v<decltype(int_ref)>);
+  ASSERT_TRUE(std::is_reference_v<decltype(str_ref)>);
   ASSERT_EQ(int_ref, 1);
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, AllFieldIndexingWithBoundsCheckValid)
+TEST(MultiFieldArray, AllFieldPositionalAccessWithBoundsCheckValid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
@@ -614,7 +644,7 @@ TEST(MultiFieldArray, AllFieldIndexingWithBoundsCheckValid)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, ConstAllFieldIndexingWithBoundsCheckValid)
+TEST(MultiFieldArray, ConstAllFieldPositionalAccessWithBoundsCheckValid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   multi_field_array.get<int>(4) = 1;
@@ -628,17 +658,46 @@ TEST(MultiFieldArray, ConstAllFieldIndexingWithBoundsCheckValid)
   ASSERT_EQ(str_ref, "unacceptable!");
 }
 
-TEST(MultiFieldArray, AllFieldIndexingWithBoundsCheckInvalid)
+TEST(MultiFieldArray, AllFieldPositionalAccessWithBoundsCheckInvalid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
 
   ASSERT_THROW(multi_field_array.at(40), std::out_of_range);
 }
 
-TEST(MultiFieldArray, ConstAllFieldIndexingWithBoundsCheckInvalid)
+TEST(MultiFieldArray, ConstAllFieldPositionalAccessWithBoundsCheckInvalid)
 {
   mf::multi_field_array<int, std::string> multi_field_array(10);
   const mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
 
   ASSERT_THROW(const_multi_field_array.at(40), std::out_of_range);
+}
+
+TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
+{
+  struct CustomPolicy
+  {
+    static constexpr std::size_t next_capacity(const std::size_t prev_capacity) { return prev_capacity * 4UL + 10UL; }
+  };
+
+  using multi_field_array_type =
+    mf::BasicMultiFieldArray<std::tuple<int>, CustomPolicy, mf::default_allocator_adapter<int>>;
+
+  multi_field_array_type array;
+
+  ASSERT_EQ(array.capacity(), 0UL);
+
+  array.emplace_back(1);
+
+  ASSERT_EQ(array.capacity(), 10UL);
+
+  // Add just enough elements to trigger reallocation
+  const std::size_t n_to_trigger_reallocation = array.capacity();
+  for (std::size_t i = 0; i < n_to_trigger_reallocation; ++i)
+  {
+    array.emplace_back(static_cast<int>(i + 2));
+  }
+
+  ASSERT_GT(array.capacity(), n_to_trigger_reallocation);
+  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(n_to_trigger_reallocation));
 }

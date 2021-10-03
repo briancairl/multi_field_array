@@ -9,17 +9,13 @@
 #include <tuple>
 #include <type_traits>
 
+// MF
+#include <mf/support/tuple_wrap.hpp>
+
 namespace mf
 {
 namespace detail
 {
-
-template <typename TupleT, template <typename> typename WrapperTmpl> struct tuple_wrap;
-
-template <typename... Ts, template <typename> typename WrapperTmpl> struct tuple_wrap<std::tuple<Ts...>, WrapperTmpl>
-{
-  using type = std::tuple<typename WrapperTmpl<Ts>::type...>;
-};
 
 /**
  * @brief Returns a tuple of lvalue references from a tuple of pointers, which a dereferenced
@@ -57,11 +53,11 @@ template <typename TupleOfIteratorsT> inline auto tuple_dereference(TupleOfItera
   return detail::tuple_dereference(std::forward<TupleOfIteratorsT>(tup_of_ptr), std::make_index_sequence<N>{});
 }
 
-template <typename TupleT> using tuple_of_pointers = detail::tuple_wrap<TupleT, std::add_pointer>;
+template <typename TupleT> using tuple_of_pointers = tuple_wrap<TupleT, std::add_pointer>;
 
 template <typename TupleT> using tuple_of_pointers_t = typename tuple_of_pointers<TupleT>::type;
 
-template <typename TupleT> using tuple_of_lvalue_references = detail::tuple_wrap<TupleT, std::add_lvalue_reference>;
+template <typename TupleT> using tuple_of_lvalue_references = tuple_wrap<TupleT, std::add_lvalue_reference>;
 
 template <typename TupleT> using tuple_of_lvalue_references_t = typename tuple_of_lvalue_references<TupleT>::type;
 

@@ -11,7 +11,6 @@
 #include <utility>
 
 // MF
-#include <mf/multi_field_array_fwd.hpp>
 #include <mf/support/assert.hpp>
 #include <mf/support/tuple_for_each.hpp>
 #include <mf/support/tuple_ref.hpp>
@@ -129,7 +128,8 @@ public:
   }
 
 private:
-  template <typename FieldTs, typename AllocatorTs> friend class BasicMultiFieldArray;
+  template <typename FieldTs, typename CapacityIncreasePolicy, typename AllocatorAdapterT>
+  friend class BasicMultiFieldArray;
 
   View(const std::tuple<Ts*...>& data, const std::size_t size) : data_{data}, size_{size} {}
 
