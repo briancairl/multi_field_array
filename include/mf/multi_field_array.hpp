@@ -13,6 +13,7 @@
 #include <utility>
 
 // MF
+#include <mf/multi_allocator_adapter.hpp>
 #include <mf/multi_field_array_fwd.hpp>
 #include <mf/support/pointer_element_type.hpp>
 #include <mf/support/tuple_for_each.hpp>
@@ -22,12 +23,12 @@
 namespace mf
 {
 
-template <typename... Ts, typename... AllocatorTs>
-class BasicMultiFieldArray<std::tuple<Ts...>, std::tuple<AllocatorTs...>>
+template <typename... Ts, typename AllocatorTs>
+class BasicMultiFieldArray<std::tuple<Ts...>, BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>>
 {
 public:
-  /// Allocators for all \c Ts
-  using allocator_types = std::tuple<AllocatorTs...>;
+  /// Alias for multi-field allocator adapter
+  using allocator_adapter_type = BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>;
 
   /// Tuple of field value types
   using value_types = std::tuple<Ts...>;
@@ -37,23 +38,26 @@ public:
    *
    *        Sets initialize size and capacity to zero
    */
-  BasicMultiFieldArray() : allocators_{}, size_{0}, capacity_{0}
+  BasicMultiFieldArray() : allocator_adapter_{}, size_{0}, capacity_{0}
   {
     tuple_for_each(data_, [](auto& ptr) { ptr = nullptr; });
   }
 
-  explicit BasicMultiFieldArray(const allocator_types& allocators) : allocators_{allocators}, size_{0}, capacity_{0}
+  explicit BasicMultiFieldArray(const allocator_adapter_type& allocator_adapter) :
+      allocator_adapter_{allocator_adapter},
+      size_{0},
+      capacity_{0}
   {
     tuple_for_each(data_, [](auto& ptr) { ptr = nullptr; });
   }
 
-  explicit BasicMultiFieldArray(std::size_t count) : allocators_{}, size_{count}, capacity_{count}
+  explicit BasicMultiFieldArray(std::size_t count) : allocator_adapter_{}, size_{count}, capacity_{count}
   {
     BasicMultiFieldArray::allocate_and_construct(data_, count);
   }
 
-  BasicMultiFieldArray(std::size_t count, const allocator_types& allocators) :
-      allocators_{allocators},
+  BasicMultiFieldArray(std::size_t count, const allocator_adapter_type& allocator_adapter) :
+      allocator_adapter_{allocator_adapter},
       size_{count},
       capacity_{count}
   {
@@ -62,7 +66,7 @@ public:
 
   template <typename CTorArgTupleT>
   BasicMultiFieldArray(std::size_t count, CTorArgTupleT&& ctor_arg_tuple) :
-      allocators_{},
+      allocator_adapter_{},
       size_{count},
       capacity_{count}
   {
@@ -70,8 +74,11 @@ public:
   }
 
   template <typename CTorArgTupleT>
-  BasicMultiFieldArray(std::size_t count, const allocator_types& allocators, CTorArgTupleT&& ctor_arg_tuple) :
-      allocators_{allocators},
+  BasicMultiFieldArray(
+    std::size_t count,
+    const allocator_adapter_type& allocator_adapter,
+    CTorArgTupleT&& ctor_arg_tuple) :
+      allocator_adapter_{allocator_adapter},
       size_{count},
       capacity_{count}
   {
@@ -79,7 +86,7 @@ public:
   }
 
   BasicMultiFieldArray(const BasicMultiFieldArray& other) :
-      allocators_{other.allocators_},
+      allocator_adapter_{other.allocator_adapter_},
       size_{other.size_},
       capacity_{other.capacity_}
   {
@@ -115,7 +122,7 @@ public:
   }
 
   BasicMultiFieldArray(BasicMultiFieldArray&& other) :
-      allocators_{std::move(other.allocators_)},
+      allocator_adapter_{std::move(other.allocator_adapter_)},
       size_{other.size_},
       capacity_{other.capacity_}
   {
@@ -138,16 +145,11 @@ public:
       return;
     }
 
-    // Destroy all elements which have been constructed and deallocate buffer memory
-    tuple_for_each(allocators_, data_, [s = size_, c = capacity_](auto& allocator, auto& ptr) {
-      using ElementType = pointer_element_t<decltype(ptr)>;
+    // Destroy old elements
+    BasicMultiFieldArray::destroy(data_, size_);
 
-      if constexpr (!std::is_fundamental<ElementType>())
-      {
-        std::for_each(ptr, ptr + s, [](auto& element) { element.~ElementType(); });
-      }
-      allocator.deallocate(ptr, c);
-    });
+    // Deallocate old buffers
+    BasicMultiFieldArray::deallocate(data_, capacity_);
   }
 
   /**
@@ -555,14 +557,9 @@ public:
   }
 
   /**
-   * @brief Returns allocator for given field array
+   * @brief Returns allocator adapter
    */
-  template <std::size_t Index> constexpr auto get_allocator() const { return std::get<Index>(allocators_); }
-
-  /**
-   * @copydoc get_allocator
-   */
-  template <typename ValueT> constexpr auto get_allocator() const { return std::get<ValueT>(allocators_); }
+  constexpr allocator_adapter_type get_allocator_adapter() const { return allocator_adapter_; }
 
   /**
    * @brief Returns an iterable data view for one or more types contained within the original array
@@ -644,8 +641,7 @@ private:
    */
   inline void allocate(std::tuple<Ts*...>& buffers, const std::size_t capacity)
   {
-    tuple_for_each(
-      allocators_, buffers, [capacity](auto& allocator, auto& ptr) { ptr = allocator.allocate(capacity); });
+    buffers = allocator_adapter_.allocate(capacity);
   };
 
   /**
@@ -700,10 +696,8 @@ private:
    */
   inline void deallocate(std::tuple<Ts*...>& buffers, const std::size_t length)
   {
-    tuple_for_each(allocators_, buffers, [length](auto& allocator, auto& ptr) {
-      allocator.deallocate(ptr, length);
-      ptr = nullptr;
-    });
+    allocator_adapter_.deallocate(buffers, length);
+    tuple_for_each(buffers, [](auto& ptr) { ptr = nullptr; });
   };
 
   /**
@@ -781,7 +775,7 @@ private:
   }
 
   /// Allocators for each field array
-  allocator_types allocators_;
+  allocator_adapter_type allocator_adapter_;
 
   /// Pointers to data for each field
   std::tuple<Ts*...> data_;
@@ -793,11 +787,23 @@ private:
   std::size_t capacity_;
 };
 
+/// Selects which allocator-adaptation strategy to use by default. If left unspecified, then
+/// a single-pass allocation/de-allocation strategy is used, since it will be more efficient
+/// in most cases.
+#ifdef MF_DEFAULT_TO_PER_FIELD_ALLOCATION
+
+template <typename... FieldTs> using default_allocator_adapter = multi_allocator_adapter<FieldTs...>;
+
+#else
+
+template <typename... FieldTs> using default_allocator_adapter = single_allocator_adapter<FieldTs...>;
+
+#endif  // MF_DEFAULT_TO_SINGLE_PASS_ALLOCATOR
 
 /**
  * @brief Convenience alias which uses \c std::allocator for each field
  */
 template <typename... FieldTs>
-using multi_field_array = BasicMultiFieldArray<std::tuple<FieldTs...>, std::tuple<std::allocator<FieldTs>...>>;
+using multi_field_array = BasicMultiFieldArray<std::tuple<FieldTs...>, default_allocator_adapter<FieldTs...>>;
 
 }  // namespace mf
