@@ -374,6 +374,8 @@ public:
 
   /**
    * @brief Returns the number of elements
+   *
+   *        i.e. \c std::distance(begin(), end())
    */
   inline std::size_t size() const { return size_; }
 

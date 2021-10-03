@@ -26,8 +26,19 @@ namespace mf
 template <typename... Ts> class MultiFieldArrayView<std::tuple<Ts...>>
 {
 public:
+  /**
+   * @brief Returns iterator to the first element represented in the view
+   */
   inline ZipIterator<std::tuple<Ts*...>> begin() { return ZipIterator<std::tuple<Ts*...>>{data_}; }
 
+  /**
+   * @copydoc begin
+   */
+  inline ZipIterator<std::tuple<const Ts*...>> begin() const { return ZipIterator<std::tuple<const Ts*...>>{data_}; }
+
+  /**
+   * @brief Returns iterator to one element past the last element represented in the view
+   */
   inline ZipIterator<std::tuple<Ts*...>> end()
   {
     auto data_last = data_;
@@ -35,8 +46,9 @@ public:
     return ZipIterator<std::tuple<Ts*...>>{data_last};
   }
 
-  inline ZipIterator<std::tuple<const Ts*...>> begin() const { return ZipIterator<std::tuple<const Ts*...>>{data_}; }
-
+  /**
+   * @copydoc end
+   */
   inline ZipIterator<std::tuple<const Ts*...>> end() const
   {
     auto data_last = data_;
@@ -44,7 +56,17 @@ public:
     return ZipIterator<std::tuple<const Ts*...>>{data_last};
   }
 
+  /**
+   * @brief Returns the number of elements represented in the view
+   *
+   *        i.e. \c std::distance(begin(), end()).
+   */
   inline std::size_t size() const { return size_; }
+
+  /**
+   * @brief Returns true when element count is zero (view is empty)
+   */
+  inline bool empty() const { return size_ == 0; }
 
   /**
    * @brief Returns a reference to the element at specified location \c pos. No bounds checking is performed.
