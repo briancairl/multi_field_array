@@ -304,13 +304,51 @@ public:
   }
 
   /**
+   * @brief Allocates memory for at least \c new_capacity elements
+   *
+   *        If \c new_capacity is larger than \c capacity(), then array memory is reallocated to fit new,
+   *        old elements are copied and new elements are constructed. Element count, \c size(), is unchanged.
+   *        If \c new_capacity is smaller than or equal to \c capacity(), then capacity is unchanged.
+   */
+  void reserve(const std::size_t new_capacity)
+  {
+    // Do nothing if requested capacity is the less than or equal to our previous capacity
+    if (new_capacity <= capacity_)
+    {
+      return;
+    }
+    // Increase capacity if new capacity is larger than previous capacity
+    else if (new_capacity > capacity_)
+    {
+      // Pointers to new data
+      std::tuple<Ts*...> new_data;
+
+      // Allocate new memory and default construct
+      BasicMultiFieldArray::allocate(new_data, new_capacity);
+
+      // Move old data to new buffers
+      BasicMultiFieldArray::move_construct(new_data, size_);
+
+      // Destroy old elements
+      BasicMultiFieldArray::destroy(data_, size_);
+
+      // Deallocate old buffers
+      BasicMultiFieldArray::deallocate(data_, capacity_);
+
+      // Reassign buffers
+      data_ = new_data;
+      capacity_ = new_capacity;
+    }
+  }
+
+  /**
    * @brief Resizes each field array to the given size, \c new_size
    *
    *        If \c new_size is larger than \c size(), then new elements are constructed.
    *        If \c new_size is larger than \c capacity(), then array memory is reallocated to fit new,
    *        old elements are copied and new elements are constructed.
    *        If \c new_size is smaller than \c size(), then all tail elements past \c new_size
-   *        are destroyed and capacity is unchnaged.
+   *        are destroyed and capacity is unchanged.
    *        If \c new_size is equal to \c size, then the container is unchanged
    * \n
    *        May be called with a single argument if all fields are default constructable, like so:

@@ -140,6 +140,63 @@ TEST(MultiFieldArray, ResizeSameWithInitialValues)
   }
 }
 
+TEST(MultiFieldArray, ReserveMoreAfterDefaultCTor)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array;
+
+  ASSERT_EQ(multi_field_array.size(), 0UL);
+  ASSERT_EQ(multi_field_array.capacity(), 0UL);
+
+  multi_field_array.reserve(10UL);
+
+  ASSERT_EQ(multi_field_array.size(), 0UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+}
+
+TEST(MultiFieldArray, ReserveMoreAfterInitialSizeCTor)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array(10);
+
+  const auto* const prev_data_ptr = multi_field_array.data<float>();
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+
+  multi_field_array.reserve(20UL);
+
+  ASSERT_NE(prev_data_ptr, multi_field_array.data<float>());
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 20UL);
+}
+
+TEST(MultiFieldArray, ReserveSameAfterInitialSizeCTor)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array(10);
+
+  const auto* const prev_data_ptr = multi_field_array.data<float>();
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+
+  multi_field_array.reserve(10UL);
+
+  ASSERT_EQ(prev_data_ptr, multi_field_array.data<float>());
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+}
+
+TEST(MultiFieldArray, ReserveLessAfterInitialSizeCTor)
+{
+  mf::multi_field_array<float, int, std::string> multi_field_array(10);
+
+  const auto* const prev_data_ptr = multi_field_array.data<float>();
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+
+  multi_field_array.reserve(1UL);
+
+  ASSERT_EQ(prev_data_ptr, multi_field_array.data<float>());
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+}
 
 TEST(MultiFieldArray, RawPointerAccessByType)
 {
