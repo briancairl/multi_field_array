@@ -1,3 +1,5 @@
+[![Pull Request](https://github.com/briancairl/mf/actions/workflows/pr.yml/badge.svg?branch=main)](https://github.com/briancairl/mf/actions/workflows/pr.yml)
+
 # MF : MultiFieldArray container library
 
 C++17 library which provides a fully featured multi-field array container. The container is essentially a data-oriented alternative to a `std::vector`.
