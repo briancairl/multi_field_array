@@ -11,7 +11,6 @@
 #include <utility>
 
 // MF
-#include <mf/multi_field_array_fwd.hpp>
 #include <mf/support/assert.hpp>
 #include <mf/support/tuple_for_each.hpp>
 #include <mf/support/tuple_ref.hpp>

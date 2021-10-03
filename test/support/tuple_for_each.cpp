@@ -12,7 +12,7 @@
 // MF
 #include <mf/support/tuple_for_each.hpp>
 
-TEST(ForEachTuple, Unary)
+TEST(TupleForEach, Unary)
 {
   std::tuple<int*, float*, double*> some_pointers;
 
@@ -29,7 +29,7 @@ TEST(ForEachTuple, Unary)
 }
 
 
-TEST(ForEachTuple, Binary)
+TEST(TupleForEach, Binary)
 {
   std::tuple<int*, float*, double*> some_pointers_lhs;
 
