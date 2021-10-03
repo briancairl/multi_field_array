@@ -447,3 +447,57 @@ TEST(MultiFieldArray, AllFieldIterationExplicitConst)
     ASSERT_TRUE((std::is_const_v<std::remove_reference_t<std::tuple_element_t<1, TupleOfReferencesT>>>));
   });
 }
+
+TEST(MultiFieldArray, ViewIndexing)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  const auto [int_ref, str_ref] = multi_field_array.view<int, std::string>()[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstViewIndexing)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  const auto [int_ref, str_ref] = const_multi_field_array.view<int, std::string>()[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, AllFieldIndexing)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  const auto [int_ref, str_ref] = multi_field_array[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}
+
+TEST(MultiFieldArray, ConstAllFieldIndexing)
+{
+  mf::multi_field_array<int, std::string> multi_field_array(10);
+  multi_field_array.get<int>(4) = 1;
+  multi_field_array.get<std::string>(4) = "unacceptable!";
+
+  mf::multi_field_array<int, std::string> const_multi_field_array{multi_field_array};
+
+  const auto [int_ref, str_ref] = const_multi_field_array[4];
+
+  ASSERT_EQ(int_ref, 1);
+  ASSERT_EQ(str_ref, "unacceptable!");
+}

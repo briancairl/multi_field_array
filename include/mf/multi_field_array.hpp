@@ -553,6 +553,20 @@ public:
       std::forward_as_tuple(std::get<Indices>(data_)...), size_};
   }
 
+  /**
+   * @brief Returns a reference to the element at specified location \c pos. No bounds checking is performed.
+   *
+   * @param pos  element position
+   *
+   * @return reference to element at \c pos
+   */
+  inline auto operator[](const std::size_t pos) { return view()[pos]; }
+
+  /**
+   * @copydoc operator[]
+   */
+  inline auto operator[](const std::size_t pos) const { return view()[pos]; }
+
 private:
   /**
    * @brief Allocates memory to \c buffers
