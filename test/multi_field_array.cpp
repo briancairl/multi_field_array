@@ -681,7 +681,7 @@ TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
   };
 
   using multi_field_array_type =
-    mf::BasicMultiFieldArray<std::tuple<int>, CustomPolicy, mf::default_allocator_adapter<int>>;
+    mf::BasicMultiFieldArray<std::tuple<int>, mf::default_allocator_adapter<int>, CustomPolicy>;
 
   multi_field_array_type array;
 
