@@ -393,22 +393,42 @@ public:
   template <typename ValueT> inline const ValueT* data() const { return std::get<ValueT*>(data_); }
 
   /**
+   * @brief Returns first iterator which iterates over all field simulatenously
+   */
+  inline auto begin() { return view().begin(); }
+
+  /**
+   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   */
+  inline auto end() { return view().end(); }
+
+  /**
+   * @brief Returns first iterator which iterates over all field simulatenously
+   */
+  inline auto begin() const { return view().begin(); }
+
+  /**
+   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   */
+  inline auto end() const { return view().end(); }
+
+  /**
    * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <std::size_t Index> inline auto* begin() { return std::get<Index>(data_); }
 
   /**
-   * @copydoc begin
+   * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <typename ValueT> inline ValueT* begin() { return std::get<ValueT*>(data_); }
 
   /**
-   * @copydoc begin
+   * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <std::size_t Index> inline const auto* begin() const { return std::get<Index>(data_); }
 
   /**
-   * @copydoc begin
+   * @brief Returns iterator (pointer) to first element in a particular field sub-array
    */
   template <typename ValueT> inline const ValueT* begin() const { return std::get<ValueT*>(data_); }
 
@@ -418,13 +438,12 @@ public:
   template <std::size_t Index> inline auto* end() { return BasicMultiFieldArray::template begin<Index>() + size_; }
 
   /**
-   * @copydoc end
+   * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
    */
   template <typename ValueT> inline ValueT* end() { return BasicMultiFieldArray::template begin<ValueT>() + size_; }
 
   /**
-   * @copydoc end
-   * @note by-index version
+   * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
    */
   template <std::size_t Index> inline const auto* end() const
   {
@@ -432,7 +451,7 @@ public:
   }
 
   /**
-   * @copydoc end
+   * @brief Returns iterator (pointer) to one past last element in a particular field sub-array
    */
   template <typename ValueT> inline const ValueT* end() const
   {

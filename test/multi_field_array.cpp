@@ -389,3 +389,30 @@ TEST(MultiFieldArray, DuplicateMultiFieldViewByType)
     ASSERT_TRUE(vec_field_dup.empty());
   }
 }
+
+
+TEST(MultiFieldArray, AllFieldIteration)
+{
+  mf::multi_field_array<std::vector<int>, std::string> multi_field_array(10);
+
+  for (auto [vec_field, str_field] : multi_field_array)
+  {
+    ASSERT_TRUE(std::is_reference_v<decltype(vec_field)>);
+    ASSERT_TRUE(std::is_reference_v<decltype(str_field)>);
+    ASSERT_TRUE(vec_field.empty());
+    ASSERT_TRUE(str_field.empty());
+  }
+}
+
+TEST(MultiFieldArray, AllFieldIterationConst)
+{
+  const mf::multi_field_array<std::vector<int>, std::string> multi_field_array(10);
+
+  for (auto [vec_field, str_field] : multi_field_array)
+  {
+    ASSERT_TRUE(std::is_reference_v<decltype(vec_field)>);
+    ASSERT_TRUE(std::is_reference_v<decltype(str_field)>);
+    ASSERT_TRUE(vec_field.empty());
+    ASSERT_TRUE(str_field.empty());
+  }
+}
