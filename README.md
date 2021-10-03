@@ -102,3 +102,10 @@ auto [int_ref_b, float_ref_b, char_ref_b] = mfa.at(3);  // with bounds checking
 The `MultiFieldArray` is sort of like an entity component system, but requires that fields exist for each enitity (at each index). In this sense, its much simpler than an ECS. Moreover, its sort of a special case of an ECS where we want all entities to have all specified components.
 
 For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://github.com/skypjack/entt) library.
+
+
+# TODOs
+
+- [ ] Add `shrink_to_fit` method to `BasicMultiFieldArray`
+- [ ] Add "single allocation" strategy option, which will allocate all field memory at once, rather than with separate allocation calls
+
