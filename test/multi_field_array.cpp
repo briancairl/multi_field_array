@@ -689,7 +689,7 @@ TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
 
   array.emplace_back(1);
 
-  ASSERT_EQ(array.capacity(), 10UL);
+  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(0));
 
   // Add just enough elements to trigger reallocation
   const std::size_t n_to_trigger_reallocation = array.capacity();
