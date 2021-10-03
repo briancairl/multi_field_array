@@ -2,7 +2,7 @@ cc_library(
   name="support",
   hdrs=glob(["include/mf/support/*.hpp"]),
   strip_include_prefix="include",
-  visibility=["//visibility:public"],
+  visibility=["//test:__subpackages__"],
 )
 
 cc_library(
