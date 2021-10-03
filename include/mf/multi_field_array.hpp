@@ -23,8 +23,11 @@
 namespace mf
 {
 
-template <typename... Ts, typename AllocatorTs>
-class BasicMultiFieldArray<std::tuple<Ts...>, BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>>
+template <typename... Ts, typename CapacityIncreasePolicy, typename AllocatorTs>
+class BasicMultiFieldArray<
+  std::tuple<Ts...>,
+  CapacityIncreasePolicy,
+  BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>>
 {
 public:
   /// Alias for multi-field allocator adapter
@@ -751,8 +754,7 @@ private:
       return;
     }
 
-    // TODO(enhancement) allow for custom reallocation policy
-    const std::size_t new_capacity = (2UL * capacity_) + 2UL;
+    const std::size_t new_capacity = CapacityIncreasePolicy::next_capacity(capacity_);
 
     // Pointers to new data
     std::tuple<Ts*...> new_data;
@@ -787,6 +789,14 @@ private:
   std::size_t capacity_;
 };
 
+/**
+ * @brief Specifies a default capacity-growing policy through the method \c next_capacity
+ */
+struct DefaultCapacityIncreasePolicy
+{
+  static constexpr std::size_t next_capacity(std::size_t prev_capacity) { return 2 * prev_capacity + 2; };
+};
+
 /// Selects which allocator-adaptation strategy to use by default. If left unspecified, then
 /// a single-pass allocation/de-allocation strategy is used, since it will be more efficient
 /// in most cases.
@@ -804,6 +814,7 @@ template <typename... FieldTs> using default_allocator_adapter = single_allocato
  * @brief Convenience alias which uses \c std::allocator for each field
  */
 template <typename... FieldTs>
-using multi_field_array = BasicMultiFieldArray<std::tuple<FieldTs...>, default_allocator_adapter<FieldTs...>>;
+using multi_field_array =
+  BasicMultiFieldArray<std::tuple<FieldTs...>, DefaultCapacityIncreasePolicy, default_allocator_adapter<FieldTs...>>;
 
 }  // namespace mf

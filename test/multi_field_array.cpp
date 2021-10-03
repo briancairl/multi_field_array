@@ -672,3 +672,32 @@ TEST(MultiFieldArray, ConstAllFieldPositionalAccessWithBoundsCheckInvalid)
 
   ASSERT_THROW(const_multi_field_array.at(40), std::out_of_range);
 }
+
+TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
+{
+  struct CustomPolicy
+  {
+    static constexpr std::size_t next_capacity(const std::size_t prev_capacity) { return prev_capacity * 4UL + 10UL; }
+  };
+
+  using multi_field_array_type =
+    mf::BasicMultiFieldArray<std::tuple<int>, CustomPolicy, mf::default_allocator_adapter<int>>;
+
+  multi_field_array_type array;
+
+  ASSERT_EQ(array.capacity(), 0UL);
+
+  array.emplace_back(1);
+
+  ASSERT_EQ(array.capacity(), 10UL);
+
+  // Add just enough elements to trigger reallocation
+  const std::size_t n_to_trigger_reallocation = array.capacity();
+  for (std::size_t i = 0; i < n_to_trigger_reallocation; ++i)
+  {
+    array.emplace_back(static_cast<int>(i + 2));
+  }
+
+  ASSERT_GT(array.capacity(), n_to_trigger_reallocation);
+  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(n_to_trigger_reallocation));
+}
