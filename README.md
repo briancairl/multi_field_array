@@ -4,6 +4,22 @@
 
 C++17 library which provides a fully featured multi-field array container. The container is essentially a data-oriented alternative to a `std::vector`.
 
+## Dependencies
+
+### General Use
+
+- C++17 Standard Library
+
+### Unit Tests
+
+- C++17 Standard Library
+- [google-test](https://github.com/google/googletest)
+
+### Benchmarking
+
+- C++17 Standard Library
+- [google-benchmark](https://github.com/google/benchmark)
+
 ## Motivation
 
 Take the following use case:
@@ -113,4 +129,4 @@ For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://gi
 - [ ] Add `CMake` build configuration
 - [ ] Add `CMake` CI step
 - [ ] Add Doxygen documentation page releases
-- [ ] Adds benchmark tests
+- [x] Add benchmark tests

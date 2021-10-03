@@ -23,11 +23,11 @@
 namespace mf
 {
 
-template <typename... Ts, typename CapacityIncreasePolicy, typename AllocatorTs>
+template <typename... Ts, typename AllocatorTs, typename CapacityIncreasePolicy>
 class BasicMultiFieldArray<
   std::tuple<Ts...>,
-  CapacityIncreasePolicy,
-  BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>>
+  BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>,
+  CapacityIncreasePolicy>
 {
 public:
   /// Alias for multi-field allocator adapter
@@ -815,6 +815,6 @@ template <typename... FieldTs> using default_allocator_adapter = single_allocato
  */
 template <typename... FieldTs>
 using multi_field_array =
-  BasicMultiFieldArray<std::tuple<FieldTs...>, DefaultCapacityIncreasePolicy, default_allocator_adapter<FieldTs...>>;
+  BasicMultiFieldArray<std::tuple<FieldTs...>, default_allocator_adapter<FieldTs...>, DefaultCapacityIncreasePolicy>;
 
 }  // namespace mf

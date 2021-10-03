@@ -8,7 +8,7 @@ namespace mf
 {
 
 template <typename FieldTs> class View;
-template <typename FieldTs, typename CapacityIncreasePolicy, typename AllocatorAdapterT> class BasicMultiFieldArray;
+template <typename FieldTs, typename AllocatorAdapterT, typename CapacityIncreasePolicy> class BasicMultiFieldArray;
 template <typename ValueTs, typename AllocatorTs> class BasicMultiAllocatorAdapter;
 
 }  // namespace mf

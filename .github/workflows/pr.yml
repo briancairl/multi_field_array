@@ -18,7 +18,7 @@ jobs:
     - uses: pre-commit/action@v2.0.0
 
   # Build/run unit tests with bazel
-  bazel:
+  bazel-unit-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,4 +37,26 @@ jobs:
         key: bazel
 
     - name: Run Unit Tests
-      run: bazel test //test/...
+      run: bazel test //test/unit/...
+
+  # Build/run bench-marking tests with bazel
+  bazel-benchmark-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup bazel
+      uses: jwlawson/actions-setup-bazel@v1
+      with:
+        bazel-version: '2.0.0'
+
+    - name: Setup bazel cache
+      uses: actions/cache@v2
+      with:
+        path: "/home/runner/.cache/bazel"
+        key: bazel
+
+    - name: Run Unit Tests
+      run: bazel test //test/benchmark/...
