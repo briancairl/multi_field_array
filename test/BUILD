@@ -1,4 +1,4 @@
-TEST_COPTS = ["-fsanitize=address", "-fsanitize-address-use-after-scope", "-DADDRESS_SANITIZER", "-g", "-fno-omit-frame-pointer", "-O0"]
+TEST_COPTS = ["-DNDEBUG", "-fsanitize=address", "-fsanitize-address-use-after-scope", "-DADDRESS_SANITIZER", "-g", "-fno-omit-frame-pointer", "-O0"]
 TEST_LINKOPTS = ["-fsanitize=address", "-static-libasan"]
 
 cc_test(
