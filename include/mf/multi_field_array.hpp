@@ -198,7 +198,7 @@ public:
    *        to be forwarded to the construct for each corresponding field type.
    * \n
    *        @code{.cpp}
-   *        BasicMultiFieldArray<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<std::tuple<float, int, std::string>> array;
    *
    *        array.emplace_back(
    *          std::piecewise_construct,         // tag
@@ -250,7 +250,7 @@ public:
    *        field type
    * \n
    *        @code{.cpp}
-   *        BasicMultiFieldArray<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<std::tuple<float, int, std::string>> array;
    *
    *        array.emplace_back(
    *          0.f,       // float field
@@ -304,9 +304,29 @@ public:
   }
 
   /**
-   * @brief Resizes each field array to the given size
+   * @brief Resizes each field array to the given size, \c new_size
    *
-   *        Non-fundemental field types are default-constructed
+   *        If \c new_size is larger than \c size(), then new elements are constructed.
+   *        If \c new_size is larger than \c capacity(), then array memory is reallocated to fit new,
+   *        old elements are copied and new elements are constructed.
+   *        If \c new_size is smaller than \c size(), then all tail elements past \c new_size
+   *        are destroyed and capacity is unchnaged.
+   *        If \c new_size is equal to \c size, then the container is unchanged
+   * \n
+   *        May be called with a single argument if all fields are default constructable, like so:
+   * \n
+   *        @code{.cpp}
+   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        array.resize(5);
+   *        @endcode
+   * \n
+   *        May also be called with two arguments, where the second argument is a tuple of values to
+   *        intialize all newly created values on resizing
+   * \n
+   *        @code{.cpp}
+   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        array.resize(5, std::forward_as_tuple(1.f, 2, "3"));
+   *        @endcode
    */
   template <typename... CTorArgTupleT> void resize(const std::size_t new_size, CTorArgTupleT&&... ctor_arg_tuple)
   {
