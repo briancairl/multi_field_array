@@ -14,10 +14,10 @@
 
 // MF
 #include <mf/multi_field_array_fwd.hpp>
-#include <mf/multi_field_array_view.hpp>
 #include <mf/support/pointer_element_type.hpp>
 #include <mf/support/tuple_for_each.hpp>
 #include <mf/support/tuple_select.hpp>
+#include <mf/support/view.hpp>
 
 namespace mf
 {
@@ -509,50 +509,45 @@ public:
   /**
    * @brief Returns an iterable data view for one or more types contained within the original array
    */
-  MultiFieldArrayView<std::tuple<Ts...>> view() { return MultiFieldArrayView<std::tuple<Ts...>>{data_, size_}; }
+  View<std::tuple<Ts...>> view() { return View<std::tuple<Ts...>>{data_, size_}; }
 
   /**
    * @brief Returns an iterable data view for one or more types contained within the original array
    */
-  template <typename... ViewValueTs> MultiFieldArrayView<std::tuple<ViewValueTs...>> view()
+  template <typename... ViewValueTs> View<std::tuple<ViewValueTs...>> view()
   {
-    return MultiFieldArrayView<std::tuple<ViewValueTs...>>{std::forward_as_tuple(std::get<ViewValueTs*>(data_)...),
-                                                           size_};
+    return View<std::tuple<ViewValueTs...>>{std::forward_as_tuple(std::get<ViewValueTs*>(data_)...), size_};
   }
 
   /**
    * @copydoc view
    */
-  template <std::size_t... Indices> MultiFieldArrayView<tuple_select_t<value_types, Indices...>> view()
+  template <std::size_t... Indices> View<tuple_select_t<value_types, Indices...>> view()
   {
-    return MultiFieldArrayView<tuple_select_t<value_types, Indices...>>{
-      std::forward_as_tuple(std::get<Indices>(data_)...), size_};
+    return View<tuple_select_t<value_types, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...), size_};
   }
 
   /**
    * @brief Returns an iterable data view for one or more types contained within the original array
    */
-  MultiFieldArrayView<std::tuple<const Ts...>> view() const
-  {
-    return MultiFieldArrayView<std::tuple<const Ts...>>{data_, size_};
-  }
+  View<std::tuple<const Ts...>> view() const { return View<std::tuple<const Ts...>>{data_, size_}; }
 
   /**
    * @brief Returns an iterable data view for one or more types contained within the original array
    */
-  template <typename... ViewValueTs> MultiFieldArrayView<std::tuple<const ViewValueTs...>> view() const
+  template <typename... ViewValueTs> View<std::tuple<const ViewValueTs...>> view() const
   {
-    return MultiFieldArrayView<std::tuple<const ViewValueTs...>>{
+    return View<std::tuple<const ViewValueTs...>>{
       std::forward_as_tuple(const_cast<const ViewValueTs*>(std::get<ViewValueTs*>(data_))...), size_};
   }
 
   /**
    * @copydoc view
    */
-  template <std::size_t... Indices> MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>> view() const
+  template <std::size_t... Indices> View<const_tuple_select_t<value_types, Indices...>> view() const
   {
-    return MultiFieldArrayView<const_tuple_select_t<value_types, Indices...>>{
-      std::forward_as_tuple(std::get<Indices>(data_)...), size_};
+    return View<const_tuple_select_t<value_types, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...),
+                                                               size_};
   }
 
   /**

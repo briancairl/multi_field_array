@@ -7,7 +7,7 @@
 namespace mf
 {
 
-template <typename FieldTs> class MultiFieldArrayView;
+template <typename FieldTs> class View;
 template <typename FieldTs, typename AllocatorTs> class BasicMultiFieldArray;
 template <typename FieldTs> class ZipIterator;
 

@@ -23,7 +23,7 @@ namespace mf
 /**
  * @brief Mutable view helper used for iterating over a subset of the field types of a MultiFieldArray
  */
-template <typename... Ts> class MultiFieldArrayView<std::tuple<Ts...>>
+template <typename... Ts> class View<std::tuple<Ts...>>
 {
 public:
   /**
@@ -131,7 +131,7 @@ public:
 private:
   template <typename FieldTs, typename AllocatorTs> friend class BasicMultiFieldArray;
 
-  MultiFieldArrayView(const std::tuple<Ts*...>& data, const std::size_t size) : data_{data}, size_{size} {}
+  View(const std::tuple<Ts*...>& data, const std::size_t size) : data_{data}, size_{size} {}
 
   /// Pointers to field data
   std::tuple<Ts*...> data_;
