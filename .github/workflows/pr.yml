@@ -17,21 +17,6 @@ jobs:
     - uses: actions/setup-python@v2
     - uses: pre-commit/action@v2.0.0
 
-  # Build/run unit tests with cmake
-  # cmake:
-
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout repository
-  #     uses: actions/checkout@v2
-
-  #   - name: Install cmake
-  #     run: sudo apt-get install make cmake
-
-  #   - name: Run Unit Tests
-  #     run: mkdir build && cd build && cmake .. -DBUILD_TESTS=true && make && ctest
-
   # Build/run unit tests with bazel
   bazel:
     runs-on: ubuntu-latest
