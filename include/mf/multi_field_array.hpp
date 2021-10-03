@@ -793,6 +793,10 @@ private:
   std::size_t capacity_;
 };
 
+
+/**
+ * @brief Convenience alias which uses \c std::allocator for each field
+ */
 template <typename... FieldTs>
 using multi_field_array = BasicMultiFieldArray<std::tuple<FieldTs...>, std::tuple<std::allocator<FieldTs>...>>;
 
