@@ -19,21 +19,16 @@ namespace mf
 {
 
 /**
- * @brief Iterates over multiple fields of a MultiFieldArray
+ * @brief Iterates over multiple iterators simultaneously
  */
-template <typename... PtrTs> class ZipIterator<std::tuple<PtrTs...>>
+template <typename... IteratorTs> class ZipIterator<std::tuple<IteratorTs...>>
 {
 public:
   inline bool operator==(const ZipIterator& other) const { return std::get<0>(this->ptr_) == std::get<0>(other.ptr_); }
-
   inline bool operator!=(const ZipIterator& other) const { return !this->operator==(other); }
-
   inline bool operator<(const ZipIterator& other) const { return std::get<0>(this->ptr_) < std::get<0>(other.ptr_); }
-
   inline bool operator>(const ZipIterator& other) const { return std::get<0>(this->ptr_) > std::get<0>(other.ptr_); }
-
   inline bool operator<=(const ZipIterator& other) const { return this->operator==(other) or this->operator<(other); }
-
   inline bool operator>=(const ZipIterator& other) const { return this->operator==(other) or this->operator>(other); }
 
   inline ZipIterator& operator=(const ZipIterator& other)
@@ -72,14 +67,17 @@ public:
 
   inline auto operator*() const { return tuple_dereference(ptr_); }
 
-  explicit ZipIterator(const std::tuple<PtrTs...>& other_ptr) : ptr_{other_ptr} {}
+  explicit ZipIterator(const std::tuple<IteratorTs...>& other_ptr) : ptr_{other_ptr} {}
 
   ZipIterator(const ZipIterator& other) : ZipIterator{other.ptr_} {}
 
 private:
-  std::tuple<PtrTs...> ptr_;
+  std::tuple<IteratorTs...> ptr_;
 };
 
+/**
+ * @brief Creates a \c ZipIterator by deducing \c IteratorTs
+ */
 template <typename... IteratorTs>
 inline ZipIterator<std::tuple<std::remove_reference_t<IteratorTs>...>> make_zip_iterator(IteratorTs... iterators)
 {
