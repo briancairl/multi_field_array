@@ -43,7 +43,7 @@ public:
    */
   BasicMultiFieldArray() : allocator_adapter_{}, size_{0}, capacity_{0}
   {
-    tuple_for_each(data_, [](auto& ptr) { ptr = nullptr; });
+    tuple_for_each([](auto& ptr) { ptr = nullptr; }, data_);
   }
 
   explicit BasicMultiFieldArray(const allocator_adapter_type& allocator_adapter) :
@@ -51,7 +51,7 @@ public:
       size_{0},
       capacity_{0}
   {
-    tuple_for_each(data_, [](auto& ptr) { ptr = nullptr; });
+    tuple_for_each([](auto& ptr) { ptr = nullptr; }, data_);
   }
 
   explicit BasicMultiFieldArray(std::size_t count) : allocator_adapter_{}, size_{count}, capacity_{count}
@@ -96,7 +96,7 @@ public:
     if (other.empty())
     {
       // If "other" is empty, initialize buffer pointers to null to prevent deallocation
-      tuple_for_each(data_, [](auto& ptr) { ptr = nullptr; });
+      tuple_for_each([](auto& ptr) { ptr = nullptr; }, data_);
     }
     else
     {
@@ -104,23 +104,26 @@ public:
       BasicMultiFieldArray::allocate(data_, capacity_);
 
       // Copy-construct new elements from values in buffers of "other"
-      tuple_for_each(data_, other.data_, [s = size_](auto* dst_ptr, const auto* src_ptr) {
-        using ElementType = pointer_element_t<decltype(dst_ptr)>;
+      tuple_for_each(
+        [s = size_](auto* dst_ptr, const auto* src_ptr) {
+          using ElementType = pointer_element_t<decltype(dst_ptr)>;
 
-        // Call default constructor for non-fundamental types
-        if constexpr (std::is_fundamental_v<ElementType>)
-        {
-          std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * s);
-        }
-        else
-        {
-          auto* const dst_last_ptr = dst_ptr + s;
-          for (; dst_ptr != dst_last_ptr; ++dst_ptr, ++src_ptr)
+          // Call default constructor for non-fundamental types
+          if constexpr (std::is_fundamental_v<ElementType>)
           {
-            new (dst_ptr) ElementType{*src_ptr};
+            std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * s);
           }
-        }
-      });
+          else
+          {
+            auto* const dst_last_ptr = dst_ptr + s;
+            for (; dst_ptr != dst_last_ptr; ++dst_ptr, ++src_ptr)
+            {
+              new (dst_ptr) ElementType{*src_ptr};
+            }
+          }
+        },
+        data_,
+        other.data_);
     }
   }
 
@@ -130,10 +133,13 @@ public:
       capacity_{other.capacity_}
   {
     // "Steal" data pointer from "other"
-    tuple_for_each(data_, other.data_, [](auto& dst_ptr, auto& src_ptr) {
-      dst_ptr = src_ptr;
-      src_ptr = nullptr;
-    });
+    tuple_for_each(
+      [](auto& dst_ptr, auto& src_ptr) {
+        dst_ptr = src_ptr;
+        src_ptr = nullptr;
+      },
+      data_,
+      other.data_);
 
     // Set "other" to a fully-reset state
     other.size_ = 0UL;
@@ -221,26 +227,29 @@ public:
     BasicMultiFieldArray::check_and_realloc_for_element_added();
 
     // Contruct new element past the previous last element in allocated buffers
-    tuple_for_each(data_, std::forward_as_tuple(ctor_args...), [s = size_](auto& ptr, auto&& ctor_arg_tuple) {
-      using ElementType = pointer_element_t<decltype(ptr)>;
+    tuple_for_each(
+      [s = size_](auto& ptr, auto&& ctor_arg_tuple) {
+        using ElementType = pointer_element_t<decltype(ptr)>;
 
-      // Simply assign fundamental types
-      if constexpr (std::is_fundamental_v<ElementType>)
-      {
-        static_assert(
-          std::tuple_size_v<std::remove_reference_t<decltype(ctor_arg_tuple)>> == 1UL,
-          "Cannot assign fundamental type from multiple values");
+        // Simply assign fundamental types
+        if constexpr (std::is_fundamental_v<ElementType>)
+        {
+          static_assert(
+            std::tuple_size_v<std::remove_reference_t<decltype(ctor_arg_tuple)>> == 1UL,
+            "Cannot assign fundamental type from multiple values");
 
-        *(ptr + s) = std::get<0>(std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple));
-      }
-      // Call constructor for non-fundamental types
-      else
-      {
-        // TODO(fixup) Does the result in the same code as constructing in-place?
-        new (ptr + s)
-          ElementType{std::make_from_tuple<ElementType>(std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple))};
-      }
-    });
+          *(ptr + s) = std::get<0>(std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple));
+        }
+        // Call constructor for non-fundamental types
+        else
+        {
+          // TODO(fixup) Does the result in the same code as constructing in-place?
+          new (ptr + s)
+            ElementType{std::make_from_tuple<ElementType>(std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple))};
+        }
+      },
+      data_,
+      std::forward_as_tuple(ctor_args...));
 
     // Increment the known size of the buffers in terms of effective elements
     ++size_;
@@ -277,31 +286,36 @@ public:
     if constexpr (sizeof...(FieldCopyOrMoveCTorTupleTs) == sizeof...(Ts))
     {
       // Call copy/move constructors for any non-trivial types
-      tuple_for_each(data_, std::forward_as_tuple(copy_or_move_ctor_args...), [s = size_](auto& ptr, auto&& ctor_arg) {
-        using ElementType = pointer_element_t<decltype(ptr)>;
+      tuple_for_each(
+        [s = size_](auto& ptr, auto&& ctor_arg) {
+          using ElementType = pointer_element_t<decltype(ptr)>;
 
-        // Call default constructor for non-fundamental types
-        if constexpr (std::is_fundamental_v<ElementType>)
-        {
-          *(ptr + s) = std::forward<decltype(ctor_arg)>(ctor_arg);
-        }
-        else
-        {
-          new (ptr + s) ElementType{std::forward<decltype(ctor_arg)>(ctor_arg)};
-        }
-      });
+          // Call default constructor for non-fundamental types
+          if constexpr (std::is_fundamental_v<ElementType>)
+          {
+            *(ptr + s) = std::forward<decltype(ctor_arg)>(ctor_arg);
+          }
+          else
+          {
+            new (ptr + s) ElementType{std::forward<decltype(ctor_arg)>(ctor_arg)};
+          }
+        },
+        data_,
+        std::forward_as_tuple(copy_or_move_ctor_args...));
     }
     else
     {
-      tuple_for_each(data_, [s = size_](auto& ptr) {
-        using ElementType = pointer_element_t<decltype(ptr)>;
+      tuple_for_each(
+        [s = size_](auto& ptr) {
+          using ElementType = pointer_element_t<decltype(ptr)>;
 
-        // Call default constructor for non-fundamental types
-        if constexpr (!std::is_fundamental_v<ElementType>)
-        {
-          new (ptr + s) ElementType{};
-        }
-      });
+          // Call default constructor for non-fundamental types
+          if constexpr (!std::is_fundamental_v<ElementType>)
+          {
+            new (ptr + s) ElementType{};
+          }
+        },
+        data_);
     }
 
     // Increment the known size of the buffers in terms of effective elements
@@ -402,28 +416,32 @@ public:
     // Destroy trailing elements if new size is smaller than previous size
     else if (new_size < size_)
     {
-      tuple_for_each(data_, [s = new_size, e = size_](auto& ptr) {
-        using ElementType = pointer_element_t<decltype(ptr)>;
+      tuple_for_each(
+        [s = new_size, e = size_](auto& ptr) {
+          using ElementType = pointer_element_t<decltype(ptr)>;
 
-        // Call destructor for non-fundamental types
-        if constexpr (!std::is_fundamental_v<ElementType>)
-        {
-          std::for_each(ptr + s, ptr + e, [](auto& element) { element.~ElementType(); });
-        }
-      });
+          // Call destructor for non-fundamental types
+          if constexpr (!std::is_fundamental_v<ElementType>)
+          {
+            std::for_each(ptr + s, ptr + e, [](auto& element) { element.~ElementType(); });
+          }
+        },
+        data_);
     }
     // Default-construct trailing elements if new size is larger than previous size
     else  // (new_size > size_)
     {
-      tuple_for_each(data_, [s = new_size, e = size_](auto& ptr) {
-        using ElementType = pointer_element_t<decltype(ptr)>;
+      tuple_for_each(
+        [s = new_size, e = size_](auto& ptr) {
+          using ElementType = pointer_element_t<decltype(ptr)>;
 
-        // Call default constructor for non-fundamental types
-        if constexpr (!std::is_fundamental_v<ElementType>)
-        {
-          std::for_each(ptr + s, ptr + e, [](auto& element) { new (std::addressof(element)) ElementType{}; });
-        }
-      });
+          // Call default constructor for non-fundamental types
+          if constexpr (!std::is_fundamental_v<ElementType>)
+          {
+            std::for_each(ptr + s, ptr + e, [](auto& element) { new (std::addressof(element)) ElementType{}; });
+          }
+        },
+        data_);
     }
 
     // Set new size
@@ -656,15 +674,17 @@ private:
     BasicMultiFieldArray::allocate(buffers, capacity);
 
     // Default construct new elements
-    tuple_for_each(buffers, [capacity](auto& ptr) {
-      using ElementType = pointer_element_t<decltype(ptr)>;
+    tuple_for_each(
+      [capacity](auto& ptr) {
+        using ElementType = pointer_element_t<decltype(ptr)>;
 
-      // Call default constructor for non-fundamental types
-      if constexpr (!std::is_fundamental_v<ElementType>)
-      {
-        std::for_each(ptr, ptr + capacity, [](auto& element) { new (std::addressof(element)) ElementType{}; });
-      }
-    });
+        // Call default constructor for non-fundamental types
+        if constexpr (!std::is_fundamental_v<ElementType>)
+        {
+          std::for_each(ptr, ptr + capacity, [](auto& element) { new (std::addressof(element)) ElementType{}; });
+        }
+      },
+      buffers);
   };
 
   /**
@@ -678,20 +698,23 @@ private:
     BasicMultiFieldArray::allocate(buffers, capacity);
 
     // Value construct new elements
-    tuple_for_each(buffers, std::forward<CTorArgTupleT>(ctor_arg_tuple), [capacity](auto& ptr, const auto& other) {
-      using ElementType = pointer_element_t<decltype(ptr)>;
+    tuple_for_each(
+      [capacity](auto& ptr, const auto& other) {
+        using ElementType = pointer_element_t<decltype(ptr)>;
 
-      // Call default constructor for non-fundamental types
-      if constexpr (std::is_fundamental_v<ElementType>)
-      {
-        std::fill(ptr, ptr + capacity, other);
-      }
-      else
-      {
-        std::for_each(
-          ptr, ptr + capacity, [&other](auto& element) { new (std::addressof(element)) ElementType{other}; });
-      }
-    });
+        // Call default constructor for non-fundamental types
+        if constexpr (std::is_fundamental_v<ElementType>)
+        {
+          std::fill(ptr, ptr + capacity, other);
+        }
+        else
+        {
+          std::for_each(
+            ptr, ptr + capacity, [&other](auto& element) { new (std::addressof(element)) ElementType{other}; });
+        }
+      },
+      buffers,
+      std::forward<CTorArgTupleT>(ctor_arg_tuple));
   };
 
   /**
@@ -700,7 +723,7 @@ private:
   inline void deallocate(std::tuple<Ts*...>& buffers, const std::size_t length)
   {
     allocator_adapter_.deallocate(buffers, length);
-    tuple_for_each(buffers, [](auto& ptr) { ptr = nullptr; });
+    tuple_for_each([](auto& ptr) { ptr = nullptr; }, buffers);
   };
 
   /**
@@ -708,24 +731,27 @@ private:
    */
   inline void move_construct(std::tuple<Ts*...>& buffers, const std::size_t length)
   {
-    tuple_for_each(buffers, data_, [length](auto* dst_ptr, auto* src_ptr) {
-      using ElementType = pointer_element_t<decltype(dst_ptr)>;
+    tuple_for_each(
+      [length](auto* dst_ptr, auto* src_ptr) {
+        using ElementType = pointer_element_t<decltype(dst_ptr)>;
 
-      if constexpr (std::is_fundamental_v<ElementType>)
-      {
-        std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * length);
-      }
-      else
-      {
-        const auto* const last_src_ptr = src_ptr + length;
-        while (src_ptr != last_src_ptr)
+        if constexpr (std::is_fundamental_v<ElementType>)
         {
-          new (dst_ptr) ElementType{std::move(*src_ptr)};
-          ++src_ptr;
-          ++dst_ptr;
+          std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * length);
         }
-      }
-    });
+        else
+        {
+          const auto* const last_src_ptr = src_ptr + length;
+          while (src_ptr != last_src_ptr)
+          {
+            new (dst_ptr) ElementType{std::move(*src_ptr)};
+            ++src_ptr;
+            ++dst_ptr;
+          }
+        }
+      },
+      buffers,
+      data_);
   }
 
   /**
@@ -733,14 +759,16 @@ private:
    */
   inline void destroy(std::tuple<Ts*...>& buffers, const std::size_t length)
   {
-    tuple_for_each(buffers, [length](auto& ptr) {
-      using ElementType = pointer_element_t<decltype(ptr)>;
+    tuple_for_each(
+      [length](auto& ptr) {
+        using ElementType = pointer_element_t<decltype(ptr)>;
 
-      if constexpr (!std::is_fundamental<ElementType>())
-      {
-        std::for_each(ptr, ptr + length, [](auto& element) { element.~ElementType(); });
-      }
-    });
+        if constexpr (!std::is_fundamental<ElementType>())
+        {
+          std::for_each(ptr, ptr + length, [](auto& element) { element.~ElementType(); });
+        }
+      },
+      buffers);
   }
 
   /**
