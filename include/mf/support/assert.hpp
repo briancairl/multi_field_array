@@ -12,6 +12,10 @@
 
 #if defined(NDEBUG) || defined(_NDEBUG)
 
+#define MF_ASSERT(cond) (void)0
+
+#else
+
 // C++ Standard Library
 #include <cstdlib>
 
@@ -30,9 +34,5 @@
       _MF_PRETTY_FUNCTION);                                                                                            \
     std::abort();                                                                                                      \
   }
-
-#else
-
-#define MF_ASSERT(cond) (void)0
 
 #endif

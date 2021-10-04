@@ -6,7 +6,6 @@ def gtest(name, copts=[], linkopts=[], deps=[], **kwargs):
     '''
     _GTEST_COPTS = [
         "-Iexternal/googletest/googletest/include",
-        "-DNDEBUG",
         "-fsanitize=address",
         "-fsanitize-address-use-after-scope",
         "-DADDRESS_SANITIZER",
