@@ -41,7 +41,7 @@ public:
   inline ZipIterator<std::tuple<Ts*...>> end()
   {
     auto data_last = data_;
-    tuple_for_each(data_last, [s = size_](auto& ptr) { ptr += s; });
+    tuple_for_each([s = size_](auto& ptr) { ptr += s; }, data_last);
     return ZipIterator<std::tuple<Ts*...>>{data_last};
   }
 
@@ -51,7 +51,7 @@ public:
   inline ZipIterator<std::tuple<const Ts*...>> end() const
   {
     auto data_last = data_;
-    tuple_for_each(data_last, [s = size_](auto& ptr) { ptr += s; });
+    tuple_for_each([s = size_](auto& ptr) { ptr += s; }, data_last);
     return ZipIterator<std::tuple<const Ts*...>>{data_last};
   }
 
@@ -78,7 +78,7 @@ public:
   {
     MF_ASSERT(pos >= 0 and pos < size_);
     auto data_at_pos = data_;
-    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    tuple_for_each([pos](auto& ptr) { ptr += pos; }, data_at_pos);
     return tuple_dereference(data_at_pos);
   }
 
@@ -89,7 +89,7 @@ public:
   {
     MF_ASSERT(pos >= 0 and pos < size_);
     auto data_at_pos = data_;
-    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    tuple_for_each([pos](auto& ptr) { ptr += pos; }, data_at_pos);
     return tuple_dereference(data_at_pos);
   }
 
@@ -109,7 +109,7 @@ public:
       throw std::out_of_range{"'pos' exceeds valid range of view"};
     }
     auto data_at_pos = data_;
-    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    tuple_for_each([pos](auto& ptr) { ptr += pos; }, data_at_pos);
     return tuple_dereference(data_at_pos);
   }
 
@@ -123,7 +123,7 @@ public:
       throw std::out_of_range{"'pos' exceeds valid range of view"};
     }
     auto data_at_pos = data_;
-    tuple_for_each(data_at_pos, [pos](auto& ptr) { ptr += pos; });
+    tuple_for_each([pos](auto& ptr) { ptr += pos; }, data_at_pos);
     return tuple_dereference(data_at_pos);
   }
 

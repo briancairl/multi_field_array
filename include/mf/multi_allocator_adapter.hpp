@@ -56,7 +56,7 @@ public:
   std::tuple<ValueTs*...> allocate(const std::size_t n)
   {
     std::tuple<ValueTs*...> ptrs;
-    tuple_for_each(allocators_, ptrs, [n](auto& allocator, auto& ptr) { ptr = allocator.allocate(n); });
+    tuple_for_each([n](auto& allocator, auto& ptr) { ptr = allocator.allocate(n); }, allocators_, ptrs);
     return ptrs;
   }
 
@@ -70,7 +70,7 @@ public:
    */
   void deallocate(const std::tuple<ValueTs*...>& ptrs, const std::size_t n)
   {
-    tuple_for_each(allocators_, ptrs, [n](auto& allocator, auto& ptr) { allocator.deallocate(ptr, n); });
+    tuple_for_each([n](auto& allocator, auto& ptr) { allocator.deallocate(ptr, n); }, allocators_, ptrs);
   }
 
 private:
@@ -127,11 +127,13 @@ public:
 
     std::size_t offset = 0UL;
 
-    tuple_for_each(ptrs, [byte_addr, n, &offset](auto& ptr) {
-      using element_type = pointer_element_t<decltype(ptr)>;
-      ptr = reinterpret_cast<element_type*>(byte_addr + offset);
-      offset += (sizeof(element_type) * n);
-    });
+    tuple_for_each(
+      [byte_addr, n, &offset](auto& ptr) {
+        using element_type = pointer_element_t<decltype(ptr)>;
+        ptr = reinterpret_cast<element_type*>(byte_addr + offset);
+        offset += (sizeof(element_type) * n);
+      },
+      ptrs);
 
     return ptrs;
   }

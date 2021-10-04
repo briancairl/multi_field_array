@@ -10,48 +10,90 @@
 
 namespace mf
 {
+
+/**
+ * @brief Invokes a callback, \c cb, for elements of each tuple, \c tups
+ *
+ *        Callback should take N args, where N is \c sizeof...(tups)
+ *        @code{.cpp}
+ *        tuple_for_each(
+ *          [](const auto& tuple1_element, const auto& tuple2_element, ..., const auto& tupleN_element)
+ *          {
+ *          },
+ *          tuple1,
+ *          tuple2,
+ *          ...,
+ *          tupleN
+ *        );
+ *        @endcode
+ */
+template <typename CallbackT, typename... TupleTs> void tuple_for_each(CallbackT&& cb, TupleTs&&... tups);
+
 namespace detail
 {
 
-template <typename TupleT, typename UnaryCallbackT, std::size_t... Indices>
-inline int tuple_for_each(TupleT&& tup, UnaryCallbackT&& unary_cb, std::index_sequence<Indices...> _)
-{
-  return ((unary_cb(std::get<Indices>(std::forward<TupleT>(tup))), 1) + ...);
-}
+/**
+ * @brief Generates (and statically checks) common size between tuples, \c TupleTs
+ */
+template <typename... TupleTs> struct CommonTupleSize;
 
-template <typename Tuple1T, typename Tuple2T, typename BinaryCallbackT, std::size_t... Indices>
-inline int
-tuple_for_each(Tuple1T&& tup1, Tuple2T&& tup2, BinaryCallbackT&& binary_cb, std::index_sequence<Indices...> _)
+/**
+ * @copydoc CommonTupleSize
+ *
+ *          Termination case
+ */
+template <typename FirstTupleT> struct CommonTupleSize<FirstTupleT>
+{
+  static constexpr std::size_t size = std::tuple_size_v<std::remove_reference_t<FirstTupleT>>;
+};
+
+/**
+ * @copydoc CommonTupleSize
+ *
+ *          Size-checking case
+ */
+template <typename FirstTupleT, typename SecondTupleT, typename... OtherTupleTs>
+struct CommonTupleSize<FirstTupleT, SecondTupleT, OtherTupleTs...>
+{
+  static constexpr std::size_t size = std::tuple_size_v<std::remove_reference_t<FirstTupleT>>;
+  static_assert(size == CommonTupleSize<SecondTupleT, OtherTupleTs...>::size, "tuple sizes do not match");
+};
+
+/**
+ * @brief Calls \c std::apply on a tuple formed of elements at each \c TupleTs at \c Index
+ */
+template <std::size_t Index> struct MultiTupleApplyAdapter
+{
+  template <typename CallbackT, typename... TupleTs> inline static void exec(CallbackT&& cb, TupleTs&&... tups)
+  {
+    std::apply(std::forward<CallbackT>(cb), std::forward_as_tuple(std::get<Index>(std::forward<TupleTs>(tups))...));
+  }
+};
+
+/**
+ * @copydoc tuple_for_each
+ * @warn implementation
+ */
+template <typename CallbackT, std::size_t... Indices, typename... TupleTs>
+inline int tuple_for_each(CallbackT&& cb, std::index_sequence<Indices...> _, TupleTs&&... tups)
 {
   return (
-    (binary_cb(std::get<Indices>(std::forward<Tuple1T>(tup1)), std::get<Indices>(std::forward<Tuple2T>(tup2))), 1) +
+    (MultiTupleApplyAdapter<Indices>::template exec(std::forward<CallbackT>(cb), std::forward<TupleTs>(tups)...), 1) +
     ...);
 }
 
 }  // namespace detail
 
-template <typename TupleT, typename UnaryCallbackT> inline void tuple_for_each(TupleT&& tup, UnaryCallbackT&& unary_cb)
+/**
+ * @copydoc tuple_for_each
+ * @warn implementation
+ */
+template <typename CallbackT, typename... TupleTs> inline void tuple_for_each(CallbackT&& cb, TupleTs&&... tups)
 {
-  static constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<TupleT>>;
+  static const std::size_t IterationCount = detail::CommonTupleSize<TupleTs...>::size;
 
-  const auto __iteration_count = detail::tuple_for_each(
-    std::forward<TupleT>(tup), std::forward<UnaryCallbackT>(unary_cb), std::make_index_sequence<N>{});
-  (void)__iteration_count;
-}
-
-template <typename Tuple1T, typename Tuple2T, typename BinaryCallbackT>
-inline void tuple_for_each(Tuple1T&& tup1, Tuple2T&& tup2, BinaryCallbackT&& binary_cb)
-{
-  static constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<Tuple1T>>;
-
-  static_assert(N == std::tuple_size_v<std::remove_reference_t<Tuple2T>>, "Tuple1T and Tuple2T must be the same size");
-
-  const auto __iteration_count = detail::tuple_for_each(
-    std::forward<Tuple1T>(tup1),
-    std::forward<Tuple2T>(tup2),
-    std::forward<BinaryCallbackT>(binary_cb),
-    std::make_index_sequence<N>{});
-  (void)__iteration_count;
+  [[maybe_unused]] const auto __iteration_count = detail::tuple_for_each(
+    std::forward<CallbackT>(cb), std::make_index_sequence<IterationCount>{}, std::forward<TupleTs>(tups)...);
 }
 
 }  // namespace mf

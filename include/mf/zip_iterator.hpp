@@ -87,27 +87,27 @@ public:
 
   inline ZipIterator& operator--()
   {
-    tuple_for_each(ptr_, [](auto& ptr) { --ptr; });
+    tuple_for_each([](auto& ptr) { --ptr; }, ptr_);
     return *this;
   }
 
   inline ZipIterator operator--(int)
   {
     ZipIterator prev{*this};
-    tuple_for_each(ptr_, [](auto& ptr) { --ptr; });
+    tuple_for_each([](auto& ptr) { --ptr; }, ptr_);
     return prev;
   }
 
   inline ZipIterator& operator++()
   {
-    tuple_for_each(ptr_, [](auto& ptr) { ++ptr; });
+    tuple_for_each([](auto& ptr) { ++ptr; }, ptr_);
     return *this;
   }
 
   inline ZipIterator operator++(int)
   {
     ZipIterator prev{*this};
-    tuple_for_each(ptr_, [](auto& ptr) { ++ptr; });
+    tuple_for_each([](auto& ptr) { ++ptr; }, ptr_);
     return prev;
   }
 
