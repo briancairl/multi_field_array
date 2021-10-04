@@ -1,4 +1,4 @@
-load("@mf//:bazel/rules.bzl", "gtest")
+load("@multi_field_array//:bazel/rules.bzl", "gtest")
 
 gtest(
   name="tuple_for_each",
