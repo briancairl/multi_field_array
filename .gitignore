@@ -3,7 +3,7 @@ bazel-testlogs
 bazel-bin
 bazel-genfiles
 bazel-out
-bazel-mf
+bazel-multi_field_array
 
 # Backup Files
 *.cpp~
