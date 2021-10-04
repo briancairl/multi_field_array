@@ -15,13 +15,13 @@
 #include <mf/multi_field_array.hpp>
 
 
-struct TwoFields
+struct Two_Fields
 {
   float a;
   std::string b;
 };
 
-struct ManyFields
+struct Many_Fields
 {
   float a;
   std::string b;
@@ -33,8 +33,7 @@ struct ManyFields
 // ITERATION BENCHMARKING
 //
 
-
-static void Iteration_TwoFields_MFA(benchmark::State& state)
+static void Iteration_One_Of_Two_Fields_MFA(benchmark::State& state)
 {
   mf::multi_field_array<float, std::string> multi_field_array;
   multi_field_array.resize(1000000);
@@ -44,17 +43,17 @@ static void Iteration_TwoFields_MFA(benchmark::State& state)
     auto view = multi_field_array.view<float, std::string>();
 
     const float sum = std::accumulate(
-      view.begin(), view.end(), 0.f, [](float prev, const auto& tuples) { return prev + std::get<0>(tuples); });
+      view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) { return prev + std::get<0>(tuple); });
 
     benchmark::DoNotOptimize(sum);
   }
 }
-BENCHMARK(Iteration_TwoFields_MFA);
+BENCHMARK(Iteration_One_Of_Two_Fields_MFA);
 
 
-static void Iteration_TwoFields_Vec(benchmark::State& state)
+static void Iteration_One_Of_Two_Fields_Vec(benchmark::State& state)
 {
-  std::vector<TwoFields> vector_analogue;
+  std::vector<Two_Fields> vector_analogue;
   vector_analogue.resize(1000000);
 
   for (auto _ : state)
@@ -67,10 +66,103 @@ static void Iteration_TwoFields_Vec(benchmark::State& state)
     benchmark::DoNotOptimize(sum);
   }
 }
-BENCHMARK(Iteration_TwoFields_Vec);
+BENCHMARK(Iteration_One_Of_Two_Fields_Vec);
 
 
-static void Iteration_ManyFields_MFA(benchmark::State& state)
+static void Iteration_Two_Of_Two_Fields_MFA(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view<float, std::string>();
+
+    const float sum = std::accumulate(view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) {
+      return prev + std::get<0>(tuple) + std::get<1>(tuple).size();
+    });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_Two_Of_Two_Fields_MFA);
+
+
+static void Iteration_Two_Of_Two_Fields_Vec(benchmark::State& state)
+{
+  std::vector<Two_Fields> vector_analogue;
+  vector_analogue.resize(1000000);
+
+  for (auto _ : state)
+  {
+    const float sum =
+      std::accumulate(vector_analogue.begin(), vector_analogue.end(), 0.f, [](float prev, const auto& element) {
+        return prev + element.a + element.b.size();
+      });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_Two_Of_Two_Fields_Vec);
+
+
+static void Iteration_Two_Of_Many_Fields_MFA_View(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view<float, std::string>();
+
+    const float sum = std::accumulate(view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) {
+      return prev + std::get<0>(tuple) + std::get<1>(tuple).size();
+    });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_Two_Of_Many_Fields_MFA_View);
+
+
+static void Iteration_Two_Of_Many_Fields_MFA_All_Fields(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view();
+
+    const float sum = std::accumulate(view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) {
+      return prev + std::get<0>(tuple) + std::get<1>(tuple).size();
+    });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_Two_Of_Many_Fields_MFA_All_Fields);
+
+
+static void Iteration_Two_Of_Many_Fields_Vec(benchmark::State& state)
+{
+  std::vector<Many_Fields> vector_analogue;
+  vector_analogue.resize(1000000);
+
+  for (auto _ : state)
+  {
+    const float sum =
+      std::accumulate(vector_analogue.begin(), vector_analogue.end(), 0.f, [](float prev, const auto& element) {
+        return prev + element.a + element.b.size();
+      });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_Two_Of_Many_Fields_Vec);
+
+
+static void Iteration_One_Of_Many_Fields_MFA_View(benchmark::State& state)
 {
   mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
   multi_field_array.resize(1000000);
@@ -80,17 +172,35 @@ static void Iteration_ManyFields_MFA(benchmark::State& state)
     auto view = multi_field_array.view<float, std::string>();
 
     const float sum = std::accumulate(
-      view.begin(), view.end(), 0.f, [](float prev, const auto& tuples) { return prev + std::get<0>(tuples); });
+      view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) { return prev + std::get<0>(tuple); });
 
     benchmark::DoNotOptimize(sum);
   }
 }
-BENCHMARK(Iteration_ManyFields_MFA);
+BENCHMARK(Iteration_One_Of_Many_Fields_MFA_View);
 
 
-static void Iteration_ManyFields_Vec(benchmark::State& state)
+static void Iteration_One_Of_Many_Fields_MFA_All_Fields(benchmark::State& state)
 {
-  std::vector<ManyFields> vector_analogue;
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view();
+
+    const float sum = std::accumulate(
+      view.begin(), view.end(), 0.f, [](float prev, const auto& tuple) { return prev + std::get<0>(tuple); });
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Iteration_One_Of_Many_Fields_MFA_All_Fields);
+
+
+static void Iteration_One_Of_Many_Fields_Vec(benchmark::State& state)
+{
+  std::vector<Many_Fields> vector_analogue;
   vector_analogue.resize(1000000);
 
   for (auto _ : state)
@@ -103,15 +213,14 @@ static void Iteration_ManyFields_Vec(benchmark::State& state)
     benchmark::DoNotOptimize(sum);
   }
 }
-BENCHMARK(Iteration_ManyFields_Vec);
-
+BENCHMARK(Iteration_One_Of_Many_Fields_Vec);
 
 //
 // ALLOCATION BENCHMARKING
 //
 
 
-static void Allocation_TwoFields_MFA(benchmark::State& state)
+static void Allocation_Two_Fields_MFA(benchmark::State& state)
 {
   for (auto _ : state)
   {
@@ -120,22 +229,22 @@ static void Allocation_TwoFields_MFA(benchmark::State& state)
     benchmark::DoNotOptimize(multi_field_array);
   }
 }
-BENCHMARK(Allocation_TwoFields_MFA);
+BENCHMARK(Allocation_Two_Fields_MFA);
 
 
-static void Allocation_TwoFields_Vec(benchmark::State& state)
+static void Allocation_Two_Fields_Vec(benchmark::State& state)
 {
   for (auto _ : state)
   {
-    std::vector<TwoFields> vector_analogue;
+    std::vector<Two_Fields> vector_analogue;
     vector_analogue.resize(10000);
     benchmark::DoNotOptimize(vector_analogue);
   }
 }
-BENCHMARK(Allocation_TwoFields_Vec);
+BENCHMARK(Allocation_Two_Fields_Vec);
 
 
-static void Allocation_ManyFields_MFA(benchmark::State& state)
+static void Allocation_Many_Fields_MFA(benchmark::State& state)
 {
   for (auto _ : state)
   {
@@ -144,19 +253,19 @@ static void Allocation_ManyFields_MFA(benchmark::State& state)
     benchmark::DoNotOptimize(multi_field_array);
   }
 }
-BENCHMARK(Allocation_ManyFields_MFA);
+BENCHMARK(Allocation_Many_Fields_MFA);
 
 
-static void Allocation_ManyFields_Vec(benchmark::State& state)
+static void Allocation_Many_Fields_Vec(benchmark::State& state)
 {
   for (auto _ : state)
   {
-    std::vector<ManyFields> vector_analogue;
+    std::vector<Many_Fields> vector_analogue;
     vector_analogue.resize(10000);
     benchmark::DoNotOptimize(vector_analogue);
   }
 }
-BENCHMARK(Allocation_ManyFields_Vec);
+BENCHMARK(Allocation_Many_Fields_Vec);
 
 
 BENCHMARK_MAIN();

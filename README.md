@@ -115,6 +115,43 @@ char_ref = 'a';
 auto [int_ref_b, float_ref_b, char_ref_b] = mfa.at(3);  // with bounds checking
 ```
 
+# Performance
+
+## Running micro-benchmarking tests
+```
+bazel test //test/benchmark/... --test_output=all --cache_test_results=no
+```
+
+## Example micro-benchmarking output
+```
+Run on (8 X 4500 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x4)
+  L1 Instruction 32 KiB (x4)
+  L2 Unified 256 KiB (x4)
+  L3 Unified 8192 KiB (x1)
+Load Average: 0.66, 0.48, 0.49
+
+--------------------------------------------------------------------------------------
+Benchmark                                            Time             CPU   Iterations
+--------------------------------------------------------------------------------------
+Iteration_One_Of_Two_Fields_MFA                 911860 ns       911152 ns          765   <-- Accessing one field of MultiFieldArray of two field types
+Iteration_One_Of_Two_Fields_Vec                1924595 ns      1921561 ns          387   <-- Accessing one field of std::vector<Struct> with two members
+Iteration_Two_Of_Two_Fields_MFA                2335226 ns      2331385 ns          301
+Iteration_Two_Of_Two_Fields_Vec                2542674 ns      2538851 ns          288
+Iteration_Two_Of_Many_Fields_MFA_View          2454603 ns      2450854 ns          265
+Iteration_Two_Of_Many_Fields_MFA_All_Fields    2286510 ns      2283481 ns          292
+Iteration_Two_Of_Many_Fields_Vec               2908417 ns      2907053 ns          240
+Iteration_One_Of_Many_Fields_MFA_View           909963 ns       909970 ns          766
+Iteration_One_Of_Many_Fields_MFA_All_Fields     908849 ns       908857 ns          760
+Iteration_One_Of_Many_Fields_Vec               2556763 ns      2556768 ns          263
+Allocation_Two_Fields_MFA                        20553 ns        20554 ns        34162
+Allocation_Two_Fields_Vec                        25640 ns        25641 ns        27229
+Allocation_Many_Fields_MFA                       20441 ns        20441 ns        33742
+Allocation_Many_Fields_Vec                       35104 ns        35104 ns        19913
+================================================================================
+```
+
 # Inspiration
 
 The `MultiFieldArray` is sort of like an entity component system, but requires that fields exist for each enitity (at each index). In this sense, its much simpler than an ECS. Moreover, its sort of a special case of an ECS where we want all entities to have all specified components.
