@@ -2,7 +2,7 @@
 
 # MultiFieldArray container library
 
-C++17 library which provides a fully featured multi-field array container. The container is essentially a data-oriented alternative to a `std::vector`.
+C++17 library which implements the well known ["parallel array" or "structure of arrays" (SoA)](https://en.wikipedia.org/wiki/Parallel_array), called a "multi-field array" here. The container is essentially a data-oriented alternative to a `std::vector<S>`, where `S` is a structure with multiple fields, and is, thus, an "array of structures" (AoS).
 
 ## Dependencies
 
@@ -154,7 +154,9 @@ Allocation_Many_Fields_Vec                       35104 ns        35104 ns       
 
 # Inspiration
 
-The `MultiFieldArray` is sort of like an entity component system, but requires that fields exist for each enitity (at each index). In this sense, its much simpler than an ECS. Moreover, its sort of a special case of an ECS where we want all entities to have all specified components.
+The `MultiFieldArray` is sort of like a very (very) simple Entity-component system (ECS). Unlike a pratical ECS, all component types need to be known "ahead of time" when defining a concrete multi-field array type. Additionally, memory will be allocated to hold all components for all enitities, whether you need it or not.
+
+In this sense, it implements a "special case" ECS with the absolute minimal access indirection. Since there are many cases where allocating for all components at once is actually necessary, it made sense to implement even though there are other more general purposes libraries out there.
 
 For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://github.com/skypjack/entt) library.
 
