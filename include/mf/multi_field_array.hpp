@@ -449,6 +449,41 @@ public:
   }
 
   /**
+   * @brief Clears all elements, setting effective size to 0
+   *
+   *        Does not change current \c capacity()
+   */
+  inline void clear()
+  {
+    // Don't clear if size is zero
+    if (size_ == 0UL)
+    {
+      return;
+    }
+
+    // Destroy old elements
+    BasicMultiFieldArray::destroy(data_, size_);
+
+    // Size effective size to zero
+    size_ = 0UL;
+  }
+
+  /**
+   * @brief Clears all elements, setting effective size to 0 and deallocates all memory
+   *
+   *        Sets \c capacity() to 0
+   */
+  inline void release()
+  {
+    // Clear all elements
+    BasicMultiFieldArray::clear();
+
+    // Deallocate old buffers
+    BasicMultiFieldArray::deallocate(data_, capacity_);
+    capacity_ = 0UL;
+  }
+
+  /**
    * @brief Returns true when element count is zero (container is empty)
    */
   inline bool empty() const { return size_ == 0; }
