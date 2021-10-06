@@ -1,3 +1,5 @@
 build --cxxopt='-std=c++17'
 build --cxxopt='-Wall'
 build --repo_env=CC=gcc
+
+test --test_env=ASAN_OPTIONS=detect_leaks=1
