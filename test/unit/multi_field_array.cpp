@@ -701,3 +701,31 @@ TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
   ASSERT_GT(array.capacity(), n_to_trigger_reallocation);
   ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(n_to_trigger_reallocation));
 }
+
+TEST(MultiFieldArray, Clear)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+
+  multi_field_array.clear();
+
+  ASSERT_EQ(multi_field_array.size(), 0UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+}
+
+TEST(MultiFieldArray, Release)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+  ASSERT_EQ(multi_field_array.capacity(), 10UL);
+
+  multi_field_array.release();
+
+  ASSERT_EQ(multi_field_array.size(), 0UL);
+  ASSERT_EQ(multi_field_array.capacity(), 0UL);
+}
