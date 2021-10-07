@@ -401,7 +401,17 @@ public:
       std::tuple<Ts*...> new_data;
 
       // Allocate new memory and default construct
-      BasicMultiFieldArray::allocate_and_construct(new_data, new_size, std::forward<CTorArgTupleT>(ctor_arg_tuple)...);
+      BasicMultiFieldArray::allocate(new_data, new_size);
+
+      // Move old elements to new buffer
+      BasicMultiFieldArray::move_construct(new_data, size_);
+
+      // Construct new elements at the end of the buffer
+      {
+        auto start_p = new_data;
+        tuple_for_each([offset = size_](auto& ptr) { ptr += offset; }, start_p);
+        BasicMultiFieldArray::construct(start_p, new_size - size_, std::forward<CTorArgTupleT>(ctor_arg_tuple)...);
+      }
 
       // Destroy old elements
       BasicMultiFieldArray::destroy(data_, size_);
@@ -416,32 +426,16 @@ public:
     // Destroy trailing elements if new size is smaller than previous size
     else if (new_size < size_)
     {
-      tuple_for_each(
-        [s = new_size, e = size_](auto& ptr) {
-          using ElementType = pointer_element_t<decltype(ptr)>;
-
-          // Call destructor for non-fundamental types
-          if constexpr (!std::is_fundamental_v<ElementType>)
-          {
-            std::for_each(ptr + s, ptr + e, [](auto& element) { element.~ElementType(); });
-          }
-        },
-        data_);
+      auto start_p = data_;
+      tuple_for_each([offset = new_size](auto& ptr) { ptr += offset; }, start_p);
+      BasicMultiFieldArray::destroy(start_p, size_ - new_size);
     }
     // Default-construct trailing elements if new size is larger than previous size
     else  // (new_size > size_)
     {
-      tuple_for_each(
-        [s = new_size, e = size_](auto& ptr) {
-          using ElementType = pointer_element_t<decltype(ptr)>;
-
-          // Call default constructor for non-fundamental types
-          if constexpr (!std::is_fundamental_v<ElementType>)
-          {
-            std::for_each(ptr + s, ptr + e, [](auto& element) { new (std::addressof(element)) ElementType{}; });
-          }
-        },
-        data_);
+      auto start_p = data_;
+      tuple_for_each([offset = size_](auto& ptr) { ptr += offset; }, start_p);
+      BasicMultiFieldArray::construct(start_p, new_size - size_, std::forward<CTorArgTupleT>(ctor_arg_tuple)...);
     }
 
     // Set new size
@@ -701,51 +695,43 @@ private:
   };
 
   /**
-   * @brief Allocates memory to \c buffers and constructs those values
+   * @brief Invokes default constructor on \n n element in \c buffers
    */
-  inline void allocate_and_construct(std::tuple<Ts*...>& buffers, const std::size_t capacity)
+  inline void construct(std::tuple<Ts*...>& buffers, const std::size_t n)
   {
-    // Allocate new memory with specified capacity
-    BasicMultiFieldArray::allocate(buffers, capacity);
-
     // Default construct new elements
     tuple_for_each(
-      [capacity](auto& ptr) {
+      [n](auto& ptr) {
         using ElementType = pointer_element_t<decltype(ptr)>;
 
         // Call default constructor for non-fundamental types
         if constexpr (!std::is_fundamental_v<ElementType>)
         {
-          std::for_each(ptr, ptr + capacity, [](auto& element) { new (std::addressof(element)) ElementType{}; });
+          std::for_each(ptr, ptr + n, [](auto& element) { new (std::addressof(element)) ElementType{}; });
         }
       },
       buffers);
   };
 
   /**
-   * @brief Allocates memory to \c buffers and constructs those values
+   * @brief Invokes copy constructor on \n n element in \c buffers
    */
   template <typename CTorArgTupleT>
-  inline void
-  allocate_and_construct(std::tuple<Ts*...>& buffers, const std::size_t capacity, CTorArgTupleT&& ctor_arg_tuple)
+  inline void construct(std::tuple<Ts*...>& buffers, const std::size_t n, CTorArgTupleT&& ctor_arg_tuple)
   {
-    // Allocate new memory with specified capacity
-    BasicMultiFieldArray::allocate(buffers, capacity);
-
     // Value construct new elements
     tuple_for_each(
-      [capacity](auto& ptr, const auto& other) {
+      [n](auto& ptr, const auto& other) {
         using ElementType = pointer_element_t<decltype(ptr)>;
 
         // Call default constructor for non-fundamental types
         if constexpr (std::is_fundamental_v<ElementType>)
         {
-          std::fill(ptr, ptr + capacity, other);
+          std::fill(ptr, ptr + n, other);
         }
         else
         {
-          std::for_each(
-            ptr, ptr + capacity, [&other](auto& element) { new (std::addressof(element)) ElementType{other}; });
+          std::for_each(ptr, ptr + n, [&other](auto& element) { new (std::addressof(element)) ElementType{other}; });
         }
       },
       buffers,
@@ -753,30 +739,55 @@ private:
   };
 
   /**
+   * @brief Allocates memory to \c buffers and constructs those values
+   */
+  inline void allocate_and_construct(std::tuple<Ts*...>& buffers, const std::size_t n)
+  {
+    // Allocate new memory with specified capacity
+    BasicMultiFieldArray::allocate(buffers, n);
+
+    // Default construct new elements
+    BasicMultiFieldArray::construct(buffers, n);
+  };
+
+  /**
+   * @brief Allocates memory to \c buffers and constructs those values
+   */
+  template <typename CTorArgTupleT>
+  inline void allocate_and_construct(std::tuple<Ts*...>& buffers, const std::size_t n, CTorArgTupleT&& ctor_arg_tuple)
+  {
+    // Allocate new memory with specified capacity
+    BasicMultiFieldArray::allocate(buffers, n);
+
+    // Value construct new elements
+    BasicMultiFieldArray::construct(buffers, n, std::forward<CTorArgTupleT>(ctor_arg_tuple));
+  };
+
+  /**
    * @brief Deallocates memory from \c buffers
    */
-  inline void deallocate(std::tuple<Ts*...>& buffers, const std::size_t length)
+  inline void deallocate(std::tuple<Ts*...>& buffers, const std::size_t n)
   {
-    allocator_adapter_.deallocate(buffers, length);
+    allocator_adapter_.deallocate(buffers, n);
     tuple_for_each([](auto& ptr) { ptr = nullptr; }, buffers);
   };
 
   /**
    * @brief Moves-constructor elements to \c buffers
    */
-  inline void move_construct(std::tuple<Ts*...>& buffers, const std::size_t length)
+  inline void move_construct(std::tuple<Ts*...>& buffers, const std::size_t n)
   {
     tuple_for_each(
-      [length](auto* dst_ptr, auto* src_ptr) {
+      [n](auto* dst_ptr, auto* src_ptr) {
         using ElementType = pointer_element_t<decltype(dst_ptr)>;
 
         if constexpr (std::is_fundamental_v<ElementType>)
         {
-          std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * length);
+          std::memcpy(dst_ptr, src_ptr, sizeof(ElementType) * n);
         }
         else
         {
-          const auto* const last_src_ptr = src_ptr + length;
+          const auto* const last_src_ptr = src_ptr + n;
           while (src_ptr != last_src_ptr)
           {
             new (dst_ptr) ElementType{std::move(*src_ptr)};
@@ -792,15 +803,15 @@ private:
   /**
    * @brief Calls destructor on elements from \c buffers
    */
-  inline void destroy(std::tuple<Ts*...>& buffers, const std::size_t length)
+  inline void destroy(std::tuple<Ts*...>& buffers, const std::size_t n)
   {
     tuple_for_each(
-      [length](auto& ptr) {
+      [n](auto& ptr) {
         using ElementType = pointer_element_t<decltype(ptr)>;
 
         if constexpr (!std::is_fundamental<ElementType>())
         {
-          std::for_each(ptr, ptr + length, [](auto& element) { element.~ElementType(); });
+          std::for_each(ptr, ptr + n, [](auto& element) { element.~ElementType(); });
         }
       },
       buffers);
