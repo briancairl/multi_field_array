@@ -209,7 +209,7 @@ public:
    *        to be forwarded to the construct for each corresponding field type.
    * \n
    *        @code{.cpp}
-   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<float, int, std::string> array;
    *
    *        array.emplace_back(
    *          std::piecewise_construct,         // tag
@@ -264,7 +264,7 @@ public:
    *        field type
    * \n
    *        @code{.cpp}
-   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<float, int, std::string> array;
    *
    *        array.emplace_back(
    *          0.f,       // float field
@@ -373,7 +373,7 @@ public:
    *        May be called with a single argument if all fields are default constructable, like so:
    * \n
    *        @code{.cpp}
-   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<float, int, std::string> array;
    *        array.resize(5);
    *        @endcode
    * \n
@@ -381,7 +381,7 @@ public:
    *        intialize all newly created values on resizing
    * \n
    *        @code{.cpp}
-   *        multi_field_array<std::tuple<float, int, std::string>> array;
+   *        multi_field_array<float, int, std::string> array;
    *        array.resize(5, std::forward_as_tuple(1.f, 2, "3"));
    *        @endcode
    */
