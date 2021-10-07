@@ -267,5 +267,111 @@ static void Allocation_Many_Fields_Vec(benchmark::State& state)
 }
 BENCHMARK(Allocation_Many_Fields_Vec);
 
+//
+// RANDOM ACCESS BENCHMARKING
+//
+
+static void Random_Access_One_Of_Many_Fields_MFA_View(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view<float, std::string>();
+
+    const std::size_t index = std::rand() % multi_field_array.size();
+    const float sum = std::get<0>(view[index]);
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_One_Of_Many_Fields_MFA_View);
+
+
+static void Random_Access_One_Of_Many_Fields_MFA_All_Fields(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view();
+
+    const std::size_t index = std::rand() % multi_field_array.size();
+    const float sum = std::get<0>(view[index]);
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_One_Of_Many_Fields_MFA_All_Fields);
+
+
+static void Random_Access_One_Of_Many_Fields_Vec(benchmark::State& state)
+{
+  std::vector<Many_Fields> vector_analogue;
+  vector_analogue.resize(1000000);
+
+  for (auto _ : state)
+  {
+    const std::size_t index = std::rand() % vector_analogue.size();
+    const float sum = vector_analogue[index].a;
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_One_Of_Many_Fields_Vec);
+
+
+static void Random_Access_Two_Of_Many_Fields_MFA_View(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view<float, std::string>();
+
+    const std::size_t index = std::rand() % multi_field_array.size();
+    const float sum = std::get<0>(view[index]) + std::get<1>(view[index]).size();
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_Two_Of_Many_Fields_MFA_View);
+
+
+static void Random_Access_Two_Of_Many_Fields_MFA_All_Fields(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+  multi_field_array.resize(1000000);
+
+  for (auto _ : state)
+  {
+    auto view = multi_field_array.view();
+
+    const std::size_t index = std::rand() % multi_field_array.size();
+    const float sum = std::get<0>(view[index]) + std::get<1>(view[index]).size();
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_Two_Of_Many_Fields_MFA_All_Fields);
+
+
+static void Random_Access_Two_Of_Many_Fields_Vec(benchmark::State& state)
+{
+  std::vector<Many_Fields> vector_analogue;
+  vector_analogue.resize(1000000);
+
+  for (auto _ : state)
+  {
+    const std::size_t index = std::rand() % vector_analogue.size();
+    const float sum = vector_analogue[index].a + vector_analogue[index].b.size();
+
+    benchmark::DoNotOptimize(sum);
+  }
+}
+BENCHMARK(Random_Access_Two_Of_Many_Fields_Vec);
 
 BENCHMARK_MAIN();
