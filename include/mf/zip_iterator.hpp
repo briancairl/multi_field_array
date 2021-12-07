@@ -85,6 +85,37 @@ public:
     return *this;
   }
 
+  inline std::ptrdiff_t operator-(const ZipIterator& other) const
+  {
+    return std::get<0>(this->ptr_) - std::get<0>(other.ptr_);
+  }
+
+  inline ZipIterator operator-(const std::ptrdiff_t offset) const
+  {
+    ZipIterator result{*this};
+    tuple_for_each([offset](auto& ptr) { ptr -= offset; }, result.ptr_);
+    return result;
+  }
+
+  inline ZipIterator operator+(const std::ptrdiff_t offset) const
+  {
+    ZipIterator result{*this};
+    tuple_for_each([offset](auto& ptr) { ptr += offset; }, result.ptr_);
+    return result;
+  }
+
+  inline ZipIterator& operator-=(const std::ptrdiff_t offset)
+  {
+    tuple_for_each([offset](auto& ptr) { ptr -= offset; }, ptr_);
+    return *this;
+  }
+
+  inline ZipIterator& operator+=(const std::ptrdiff_t offset)
+  {
+    tuple_for_each([offset](auto& ptr) { ptr += offset; }, ptr_);
+    return *this;
+  }
+
   inline ZipIterator& operator--()
   {
     tuple_for_each([](auto& ptr) { --ptr; }, ptr_);
