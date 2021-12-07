@@ -69,3 +69,36 @@ TEST(ZipIterator, TraitsNoCommonIteratorCatagory)
 
   ASSERT_TRUE((std::is_same_v<std::iterator_traits<decltype(zip_itr)>::iterator_category, void>));
 }
+
+TEST(ZipIterator, PositiveOffset)
+{
+  const std::string s{"oooo"};  // random access
+  const std::string l{"bbbb"};  // random access
+
+  auto zip_itr_begin = mf::make_zip_iterator(s.begin(), l.begin());
+  auto zip_itr_next = zip_itr_begin + 1;
+
+  ASSERT_EQ(std::distance(zip_itr_begin, zip_itr_next), 1);
+}
+
+TEST(ZipIterator, NegativeOffset)
+{
+  const std::string s{"oooo"};  // random access
+  const std::string l{"bbbb"};  // random access
+
+  auto zip_itr_end = mf::make_zip_iterator(s.end(), l.end());
+  auto zip_itr_prev = zip_itr_end - 1;
+
+  ASSERT_EQ(std::distance(zip_itr_end, zip_itr_prev), -1);
+}
+
+TEST(ZipIterator, StdPrev)
+{
+  const std::string s{"oooo"};  // random access
+  const std::string l{"bbbb"};  // random access
+
+  auto zip_itr_end = mf::make_zip_iterator(s.end(), l.end());
+  auto zip_itr_prev = std::prev(zip_itr_end);
+
+  ASSERT_EQ(std::distance(zip_itr_end, zip_itr_prev), -1);
+}
