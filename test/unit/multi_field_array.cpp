@@ -689,7 +689,7 @@ TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
 
   array.emplace_back(1);
 
-  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(0));
+  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(1));
 
   // Add just enough elements to trigger reallocation
   const std::size_t n_to_trigger_reallocation = array.capacity();
@@ -699,7 +699,7 @@ TEST(MultiFieldArray, CustomCapacityIncreasePolicy)
   }
 
   ASSERT_GT(array.capacity(), n_to_trigger_reallocation);
-  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(n_to_trigger_reallocation));
+  ASSERT_EQ(array.capacity(), CustomPolicy::next_capacity(n_to_trigger_reallocation + 1));
 }
 
 TEST(MultiFieldArray, Clear)
@@ -728,4 +728,162 @@ TEST(MultiFieldArray, Release)
 
   ASSERT_EQ(multi_field_array.size(), 0UL);
   ASSERT_EQ(multi_field_array.capacity(), 0UL);
+}
+
+TEST(MultiFieldArray, IteratorDistance)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  ASSERT_EQ(
+    static_cast<std::size_t>(std::distance(multi_field_array.begin(), multi_field_array.end())),
+    multi_field_array.size());
+}
+
+TEST(MultiFieldArray, InsertCountMiddle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  multi_field_array.insert(std::next(multi_field_array.begin(), 5), 5, std::forward_as_tuple(9, "unacceptable!"));
+
+  ASSERT_EQ(multi_field_array.size(), 15UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+
+  for (std::size_t i = 5; i < 10; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 9);
+    ASSERT_EQ(vstring, "unacceptable!");
+  }
+
+  for (std::size_t i = 10; i < 15; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, InsertCountEnd)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  multi_field_array.insert(multi_field_array.end(), 5, std::forward_as_tuple(9, "unacceptable!"));
+
+  ASSERT_EQ(multi_field_array.size(), 15UL);
+
+  for (std::size_t i = 0; i < 10; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+
+  for (std::size_t i = 10; i < 15; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 9);
+    ASSERT_EQ(vstring, "unacceptable!");
+  }
+}
+
+TEST(MultiFieldArray, InsertCountBegin)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  multi_field_array.insert(multi_field_array.begin(), 5, std::forward_as_tuple(9, "unacceptable!"));
+
+  ASSERT_EQ(multi_field_array.size(), 15UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 9);
+    ASSERT_EQ(vstring, "unacceptable!");
+  }
+
+  for (std::size_t i = 5; i < 15; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, InsertCountWithIndex)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto pos = multi_field_array.insert(0, 5, std::forward_as_tuple(9, "unacceptable!"));
+  ASSERT_EQ(pos, 0UL);
+
+  ASSERT_EQ(multi_field_array.size(), 15UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 9);
+    ASSERT_EQ(vstring, "unacceptable!");
+  }
+
+  for (std::size_t i = 5; i < 15; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, InsertNone)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto pos = multi_field_array.insert(5, 0, std::forward_as_tuple(9, "unacceptable!"));
+  ASSERT_EQ(pos, 5UL);
+
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+
+  for (std::size_t i = 0; i < 10; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+
+TEST(MultiFieldArray, InsertSingle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto pos = multi_field_array.insert(0, std::forward_as_tuple(9, "unacceptable!"));
+  ASSERT_EQ(pos, 0UL);
+
+  ASSERT_EQ(multi_field_array.size(), 11UL);
+
+  for (std::size_t i = 0; i < 1; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 9);
+    ASSERT_EQ(vstring, "unacceptable!");
+  }
+
+  for (std::size_t i = 1; i < 11; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
 }
