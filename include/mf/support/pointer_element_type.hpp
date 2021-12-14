@@ -14,7 +14,7 @@ namespace mf
 template <typename PointerT> struct pointer_element
 {
   // Remove any referenced from type
-  using cleaned_pointer_type = std::remove_reference_t<PointerT>;
+  using cleaned_pointer_type = std::remove_reference_t<std::remove_const_t<PointerT>>;
 
   // Get element type that pointer would point to
   using type = typename std::pointer_traits<cleaned_pointer_type>::element_type;
