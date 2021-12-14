@@ -887,3 +887,75 @@ TEST(MultiFieldArray, InsertSingle)
     ASSERT_EQ(vstring, "ok!");
   }
 }
+
+TEST(MultiFieldArray, EraseMiddle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr = multi_field_array.erase(std::next(multi_field_array.begin(), 5));
+  ASSERT_EQ(itr, std::next(multi_field_array.begin(), 5));
+
+  ASSERT_EQ(multi_field_array.size(), 9UL);
+
+  for (std::size_t i = 0; i < 9; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseLast)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr = multi_field_array.erase(std::next(multi_field_array.begin(), 9));
+  ASSERT_EQ(itr, multi_field_array.end());
+
+  ASSERT_EQ(multi_field_array.size(), 9UL);
+
+  for (std::size_t i = 0; i < 9; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseFirst)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr = multi_field_array.erase(multi_field_array.begin());
+  ASSERT_EQ(itr, multi_field_array.begin());
+
+  ASSERT_EQ(multi_field_array.size(), 9UL);
+
+  for (std::size_t i = 0; i < 9; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseIndex)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto pos = multi_field_array.erase(5);
+  ASSERT_EQ(pos, 5UL);
+
+  ASSERT_EQ(multi_field_array.size(), 9UL);
+
+  for (std::size_t i = 0; i < 9; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}

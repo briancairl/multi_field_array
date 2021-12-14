@@ -232,7 +232,7 @@ public:
 
     // Shift all existing elements rightward to make room for newly inserted elements
     tuple_for_each(
-      [&](auto* dptr, const auto& copy_ctor_args) {
+      [&](auto* const dptr, const auto& copy_ctor_args) {
         using ElementType = pointer_element_t<decltype(dptr)>;
 
         // Location of the first element to be inserted
@@ -290,6 +290,45 @@ public:
 
     // Update effective element count
     size_ = new_size;
+
+    return BasicMultiFieldArray::at_offset(position, position_as_offset);
+  }
+
+  /**
+   * @brief Erases element at \c position
+   *
+   * @tparam PositionT  iterator or integer index type
+   *
+   * @param position  iterator or index to insert before
+   *
+   * @return iterator to new element following position after erasure
+   */
+  template <typename PositionT> inline decltype(auto) erase(PositionT position)
+  {
+    // Get element offset
+    /*const*/ std::ptrdiff_t position_as_offset = BasicMultiFieldArray::get_offset(position);
+
+    // Shift all existing elements rightward to make room for newly inserted elements
+    tuple_for_each(
+      [&](auto* const dptr) {
+        using ElementType = pointer_element_t<decltype(dptr)>;
+
+        // Location of the first element to be erased
+        auto* const element_ptr = dptr + position_as_offset;
+
+        // Copy elements after erased element
+        std::move(element_ptr + 1, dptr + size_, element_ptr);
+
+        // Destroy trailing element
+        if constexpr (!std::is_fundamental_v<ElementType>)
+        {
+          (dptr + size_ - 1)->~ElementType();
+        }
+      },
+      data_);
+
+    // Update effective element count
+    --size_;
 
     return BasicMultiFieldArray::at_offset(position, position_as_offset);
   }
