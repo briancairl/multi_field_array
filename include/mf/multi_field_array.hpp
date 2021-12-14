@@ -202,6 +202,116 @@ public:
   }
 
   /**
+   * @brief Inserts elements before \c position
+   *
+   * @tparam PositionT  iterator or integer index type
+   *
+   * @param position  iterator or index to insert before
+   * @param count  number of elements to insert before \c position
+   * @param ctor_arg_tuple  tuple of values to insert, for each field
+   *
+   * @return iterator of first inserted element
+   */
+  template <typename PositionT, typename CTorArgTupleT>
+  inline decltype(auto) insert(PositionT position, const std::size_t count, CTorArgTupleT&& ctor_arg_tuple)
+  {
+    // Get element offset BEFORE reallocation
+    /*const*/ std::ptrdiff_t position_as_offset = BasicMultiFieldArray::get_offset(position);
+
+    // Do nothing if insert count is zero
+    if (count == 0UL)
+    {
+      return BasicMultiFieldArray::at_offset(position, position_as_offset);
+    }
+
+    // Re-allocate for new elements
+    BasicMultiFieldArray::check_and_realloc_for_elements_added(count);
+
+    // Effective size after insertion
+    const std::size_t new_size = size_ + count;
+
+    // Shift all existing elements rightward to make room for newly inserted elements
+    tuple_for_each(
+      [&](auto* dptr, const auto& copy_ctor_args) {
+        using ElementType = pointer_element_t<decltype(dptr)>;
+
+        // Location of the first element to be inserted
+        auto* const beg_insert_ptr = dptr + position_as_offset;
+
+        // Location past the last element to be inserted
+        auto* const end_insert_ptr = dptr + position_as_offset + count;
+
+        // End of new sequence
+        auto* const end_array_ptr = dptr + size_;
+
+        // End of new sequence
+        auto* const end_new_array_ptr = dptr + new_size;
+
+        // End of new elements to move
+        auto* const end_spill_over_ptr = std::max(end_array_ptr, end_insert_ptr);
+
+        auto* dst_ptr = end_new_array_ptr;
+        auto* src_ptr = end_array_ptr;
+
+        // Move construct in-place into newly allocated regions
+        while (dst_ptr != end_spill_over_ptr)
+        {
+          --dst_ptr;
+          --src_ptr;
+          new (dst_ptr) ElementType{std::move(*src_ptr)};
+        }
+
+        // Move elements beyond insertion region which have previously been constructed
+        while (dst_ptr != end_insert_ptr)
+        {
+          --dst_ptr;
+          --src_ptr;
+          (*dst_ptr) = std::move(*src_ptr);
+        }
+
+        dst_ptr = end_insert_ptr;
+
+        // Copy construct into newly allocated regions
+        while (dst_ptr > end_array_ptr)
+        {
+          --dst_ptr;
+          new (dst_ptr) ElementType{copy_ctor_args};
+        }
+
+        // Copy construct into previously constructed regions
+        while (dst_ptr != beg_insert_ptr)
+        {
+          --dst_ptr;
+          (*dst_ptr) = ElementType{copy_ctor_args};
+        }
+      },
+      data_,
+      std::forward<CTorArgTupleT>(ctor_arg_tuple));
+
+    // Update effective element count
+    size_ = new_size;
+
+    return BasicMultiFieldArray::at_offset(position, position_as_offset);
+  }
+
+  /**
+   * @brief Inserts single element before \c position
+   *
+   * @tparam PositionT  iterator or integer index type
+   *
+   * @param position  iterator or index to insert before
+   * @param ctor_arg_tuple...  tuple of values to insert, for each field OR nothing
+   *
+   * @return iterator of inserted element
+   */
+  template <typename PositionT, typename CTorArgTupleT>
+  inline decltype(auto) insert(PositionT position, CTorArgTupleT&& ctor_arg_tuple)
+  {
+    return BasicMultiFieldArray::insert(
+      std::forward<PositionT>(position), 1UL, std::forward<CTorArgTupleT>(ctor_arg_tuple));
+  }
+
+  /**
    * @brief Creates a new element at the end of the array(s)
    *
    *        This version participates in overload resolution if \c std::piecewise_construct
@@ -224,7 +334,7 @@ public:
   {
     static_assert(sizeof...(Ts) == sizeof...(PiecewiseFieldCTorTupleTs), "Should be construct args for each type");
 
-    BasicMultiFieldArray::check_and_realloc_for_element_added();
+    BasicMultiFieldArray::check_and_realloc_for_elements_added(1);
 
     // Contruct new element past the previous last element in allocated buffers
     tuple_for_each(
@@ -280,7 +390,7 @@ public:
       (sizeof...(FieldCopyOrMoveCTorTupleTs) == sizeof...(Ts)) or (sizeof...(FieldCopyOrMoveCTorTupleTs) == 0UL),
       "Number of argments must be 0 or match the number of field types");
 
-    BasicMultiFieldArray::check_and_realloc_for_element_added();
+    BasicMultiFieldArray::check_and_realloc_for_elements_added(1);
 
     // Contruct new element past the previous last element in allocated buffers
     if constexpr (sizeof...(FieldCopyOrMoveCTorTupleTs) == sizeof...(Ts))
@@ -687,6 +797,49 @@ public:
 
 private:
   /**
+   * @brief Returns element offset from start
+   */
+  constexpr std::ptrdiff_t get_offset(const std::size_t index) const { return index; }
+
+  /**
+   * @brief Returns element offset from start
+   */
+  inline std::ptrdiff_t get_offset(ZipIterator<std::tuple<Ts*...>> iterator)
+  {
+    return std::distance(BasicMultiFieldArray::begin(), iterator);
+  }
+
+  /**
+   * @brief Returns element offset from start
+   */
+  inline std::ptrdiff_t get_offset(ZipIterator<std::tuple<const Ts*...>> iterator) const
+  {
+    return std::distance(BasicMultiFieldArray::begin(), iterator);
+  }
+
+  /**
+   * @brief Returns position offset from start
+   */
+  constexpr std::size_t at_offset(const std::ptrdiff_t _, const std::ptrdiff_t offset) const { return offset; }
+
+  /**
+   * @brief Returns iterator offset from start
+   */
+  inline ZipIterator<std::tuple<Ts*...>> at_offset(ZipIterator<std::tuple<Ts*...>> _, const std::ptrdiff_t offset)
+  {
+    return std::next(BasicMultiFieldArray::begin(), offset);
+  }
+
+  /**
+   * @brief Returns iterator offset from start
+   */
+  inline ZipIterator<std::tuple<const Ts*...>>
+  at_offset(ZipIterator<std::tuple<const Ts*...>> _, const std::ptrdiff_t offset) const
+  {
+    return std::next(BasicMultiFieldArray::begin(), offset);
+  }
+
+  /**
    * @brief Allocates memory to \c buffers
    */
   inline void allocate(std::tuple<Ts*...>& buffers, const std::size_t capacity)
@@ -820,15 +973,15 @@ private:
   /**
    * @brief Checks if addding next element exceed capacity; reallocated if it does
    */
-  inline void check_and_realloc_for_element_added()
+  inline void check_and_realloc_for_elements_added(const std::size_t count)
   {
     // Check if we need to reallocate data storage buffers
-    if (capacity_ >= size_ + 1)
+    if (capacity_ >= size_ + count)
     {
       return;
     }
 
-    const std::size_t new_capacity = CapacityIncreasePolicy::next_capacity(capacity_);
+    const std::size_t new_capacity = CapacityIncreasePolicy::next_capacity(std::max(size_ + count, capacity_));
 
     // Pointers to new data
     std::tuple<Ts*...> new_data;
