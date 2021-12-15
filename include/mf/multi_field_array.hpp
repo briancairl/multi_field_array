@@ -1086,7 +1086,7 @@ private:
       return;
     }
 
-    const std::size_t new_capacity = CapacityIncreasePolicy::next_capacity(std::max(size_ + count, capacity_));
+    const std::size_t new_capacity = CapacityIncreasePolicy::next_capacity(size_ + count);
 
     // Pointers to new data
     std::tuple<Ts*...> new_data;
