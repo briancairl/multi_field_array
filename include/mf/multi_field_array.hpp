@@ -202,6 +202,72 @@ public:
   }
 
   /**
+   * @brief Returns references to first element of a given type(s)
+   *
+   * @returns A tuple of references to fields if multiple types are specified, otherwise,
+   *          returns a single reference
+   */
+  template <typename... ValueTs> inline decltype(auto) front() const { return *begin<ValueTs...>(); }
+
+  /**
+   * @copydoc front
+   */
+  template <typename... ValueTs> inline decltype(auto) front() { return *begin<ValueTs...>(); }
+
+  /**
+   * @copydoc front
+   */
+  template <std::size_t... Indices> inline decltype(auto) front() const { return *begin<Indices...>(); }
+
+  /**
+   * @copydoc front
+   */
+  template <std::size_t... Indices> inline decltype(auto) front() { return *begin<Indices...>(); }
+
+  /**
+   * @copydoc front
+   */
+  inline decltype(auto) front() const { return *begin(); }
+
+  /**
+   * @copydoc front
+   */
+  inline decltype(auto) front() { return *begin(); }
+
+  /**
+   * @brief Returns references to last element of a given type(s)
+   *
+   * @returns A tuple of references to fields if multiple types are specified, otherwise,
+   *          returns a single reference
+   */
+  template <typename... ValueTs> inline decltype(auto) back() const { return *std::prev(end<ValueTs...>()); }
+
+  /**
+   * @copydoc back
+   */
+  template <typename... ValueTs> inline decltype(auto) back() { return *std::prev(end<ValueTs...>()); }
+
+  /**
+   * @copydoc back
+   */
+  template <std::size_t... Indices> inline decltype(auto) back() const { return *std::prev(end<Indices...>()); }
+
+  /**
+   * @copydoc back
+   */
+  template <std::size_t... Indices> inline decltype(auto) back() { return *std::prev(end<Indices...>()); }
+
+  /**
+   * @copydoc back
+   */
+  inline decltype(auto) back() const { return *std::prev(end()); }
+
+  /**
+   * @copydoc back
+   */
+  inline decltype(auto) back() { return *std::prev(end()); }
+
+  /**
    * @brief Inserts elements before \c position
    *
    * @tparam PositionT  iterator or integer index type
