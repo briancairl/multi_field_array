@@ -374,4 +374,37 @@ static void Random_Access_Two_Of_Many_Fields_Vec(benchmark::State& state)
 }
 BENCHMARK(Random_Access_Two_Of_Many_Fields_Vec);
 
+
+static void Grow_From_Empty_Two_Fields(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string> multi_field_array;
+
+  for (auto _ : state)
+  {
+    for (std::size_t i = 0; i < 10000; ++i)
+    {
+      multi_field_array.emplace_back();
+    }
+    benchmark::DoNotOptimize(multi_field_array);
+  }
+}
+BENCHMARK(Grow_From_Empty_Two_Fields);
+
+
+static void Grow_From_Empty_Many_Fields(benchmark::State& state)
+{
+  mf::multi_field_array<float, std::string, int, int, int, int> multi_field_array;
+
+  for (auto _ : state)
+  {
+    for (std::size_t i = 0; i < 10000; ++i)
+    {
+      multi_field_array.emplace_back();
+    }
+    benchmark::DoNotOptimize(multi_field_array);
+  }
+}
+BENCHMARK(Grow_From_Empty_Many_Fields);
+
+
 BENCHMARK_MAIN();
