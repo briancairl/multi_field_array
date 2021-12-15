@@ -983,3 +983,64 @@ TEST(MultiFieldArray, DereferenceImmutableItr)
   ASSERT_EQ(i, 1);
   ASSERT_EQ(s, "ok!");
 }
+
+TEST(MultiFieldArray, MutableFrontAccessSingle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  ASSERT_EQ(multi_field_array.front<int>(), 1);
+  ASSERT_EQ(multi_field_array.front<1>(), "ok!");
+}
+
+TEST(MultiFieldArray, ImmutableFrontAccessSingle)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  ASSERT_EQ(multi_field_array.front<int>(), 1);
+  ASSERT_EQ(multi_field_array.front<1>(), "ok!");
+}
+
+TEST(MultiFieldArray, MutableFrontAccessAll)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  auto [i, s] = multi_field_array.front();
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
+
+TEST(MultiFieldArray, ImmutableFrontAccessAll)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  const auto [i, s] = multi_field_array.front();
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
+
+
+TEST(MultiFieldArray, MutableBackAccessSingle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  ASSERT_EQ(multi_field_array.back<int>(), 1);
+  ASSERT_EQ(multi_field_array.back<1>(), "ok!");
+}
+
+TEST(MultiFieldArray, ImmutableBackAccessSingle)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  ASSERT_EQ(multi_field_array.back<int>(), 1);
+  ASSERT_EQ(multi_field_array.back<1>(), "ok!");
+}
+
+TEST(MultiFieldArray, MutableBackAccessAll)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  auto [i, s] = multi_field_array.back();
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
+
+TEST(MultiFieldArray, ImmutableBackAccessAll)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  const auto [i, s] = multi_field_array.back();
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
