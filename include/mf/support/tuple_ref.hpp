@@ -29,9 +29,11 @@ inline auto tuple_dereference(TupleOfIteratorsT&& tup_of_ptr, std::index_sequenc
   using TupleOfReferencesT =
     std::tuple<
       typename std::iterator_traits<
-        std::tuple_element_t<
-          Indices,
-          std::remove_reference_t<TupleOfIteratorsT>
+        std::remove_const_t<
+          std::tuple_element_t<
+            Indices,
+            std::remove_reference_t<TupleOfIteratorsT>
+          >
         >
       >::reference...
     >;

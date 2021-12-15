@@ -959,3 +959,27 @@ TEST(MultiFieldArray, EraseIndex)
     ASSERT_EQ(vstring, "ok!");
   }
 }
+
+TEST(MultiFieldArray, DereferenceMutableItr)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+
+  auto itr = std::prev(multi_field_array.end());
+
+  auto [i, s] = (*itr);
+
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
+
+TEST(MultiFieldArray, DereferenceImmutableItr)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+
+  auto itr = std::prev(multi_field_array.end());
+
+  auto [i, s] = (*itr);
+
+  ASSERT_EQ(i, 1);
+  ASSERT_EQ(s, "ok!");
+}
