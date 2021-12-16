@@ -161,6 +161,22 @@ public:
     BasicMultiFieldArray::deallocate(data_, capacity_);
   }
 
+  BasicMultiFieldArray& operator=(const BasicMultiFieldArray& other)
+  {
+    BasicMultiFieldArray::resize(other.size());
+    tuple_for_each(
+      [s = other.size()](auto* const dst_ptr, auto* const src_ptr) { std::copy(src_ptr, src_ptr + s, dst_ptr); },
+      data_,
+      other.data_);
+    return *this;
+  }
+
+  BasicMultiFieldArray& operator=(BasicMultiFieldArray&& other)
+  {
+    new (this) BasicMultiFieldArray{std::move(other)};
+    return *this;
+  }
+
   /**
    * @brief Returns references to values at index for each specified field type
    *
