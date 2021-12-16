@@ -960,6 +960,18 @@ TEST(MultiFieldArray, EraseIndex)
   }
 }
 
+TEST(MultiFieldArray, PopBack)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  ASSERT_EQ(multi_field_array.size(), 10UL);
+
+  multi_field_array.pop_back();
+
+  ASSERT_EQ(multi_field_array.size(), 9UL);
+}
+
 TEST(MultiFieldArray, DereferenceMutableItr)
 {
   mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
@@ -1014,7 +1026,6 @@ TEST(MultiFieldArray, ImmutableFrontAccessAll)
   ASSERT_EQ(s, "ok!");
 }
 
-
 TEST(MultiFieldArray, MutableBackAccessSingle)
 {
   mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
@@ -1044,7 +1055,6 @@ TEST(MultiFieldArray, ImmutableBackAccessAll)
   ASSERT_EQ(i, 1);
   ASSERT_EQ(s, "ok!");
 }
-
 
 TEST(MultiFieldArray, CopyAssignment)
 {
