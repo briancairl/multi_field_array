@@ -1021,7 +1021,7 @@ TEST(MultiFieldArray, EraseRangeIndex)
   multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
 
   const auto pos = multi_field_array.erase(0UL, 5UL);
-  ASSERT_EQ(pos, 0);
+  ASSERT_EQ(pos, 0UL);
 
   ASSERT_EQ(multi_field_array.size(), 5UL);
 
@@ -1300,4 +1300,18 @@ TEST(MultiFieldArray, ReverseIteratorAssignment)
     ASSERT_EQ(std::get<0>(tup), 9);
     ASSERT_EQ(std::get<1>(tup), "ok!");
   });
+}
+
+TEST(MultiFieldArray, ReverseIteratorArrowOperator)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 11; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  ASSERT_EQ(std::prev(multi_field_array.rend<std::string>())->size(), 1UL)
+    << *std::prev(multi_field_array.rend<std::string>());
+  ASSERT_EQ(multi_field_array.rbegin<std::string>()->size(), 2UL) << *multi_field_array.rbegin<std::string>();
 }
