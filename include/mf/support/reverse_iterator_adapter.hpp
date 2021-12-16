@@ -6,6 +6,7 @@
 
 // C++ Standard Library
 #include <iterator>
+#include <type_traits>
 
 namespace mf
 {
@@ -92,6 +93,30 @@ public:
   constexpr decltype(auto) operator*() { return *(this->u_); }
 
   constexpr decltype(auto) operator*() const { return *(this->u_); }
+
+  constexpr decltype(auto) operator-> ()
+  {
+    if constexpr (std::is_pointer<UnderlyingIteratorT>())
+    {
+      return this->u_;
+    }
+    else
+    {
+      return this->u_.operator->();
+    }
+  }
+
+  constexpr decltype(auto) operator-> () const
+  {
+    if constexpr (std::is_pointer<UnderlyingIteratorT>())
+    {
+      return this->u_;
+    }
+    else
+    {
+      return this->u_.operator->();
+    }
+  }
 
   explicit reverse_iterator_adapter(const UnderlyingIteratorT& underlying) : u_{underlying} {}
 
