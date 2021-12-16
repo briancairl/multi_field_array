@@ -757,32 +757,32 @@ public:
   template <typename ValueT> inline const ValueT* data() const { return std::get<ValueT*>(data_); }
 
   /**
-   * @brief Returns first iterator which iterates over all field simulatenously
+   * @brief Returns first iterator which iterates over all fields simulatenously
    */
   inline auto begin() { return view().begin(); }
 
   /**
-   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   * @brief Returns one-past last iterator which iterates over all fields simulatenously
    */
   inline auto end() { return view().end(); }
 
   /**
-   * @brief Returns first iterator which iterates over all field simulatenously
+   * @brief Returns first iterator which iterates over all fields simulatenously
    */
   inline auto begin() const { return view().begin(); }
 
   /**
-   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   * @brief Returns one-past last iterator which iterates over all fields simulatenously
    */
   inline auto end() const { return view().end(); }
 
   /**
-   * @brief Returns first iterator which iterates over all field simulatenously
+   * @brief Returns first iterator which iterates over all fields simulatenously
    */
   inline auto cbegin() const { return view().begin(); }
 
   /**
-   * @brief Returns one-past last iterator which iterates over all field simulatenously
+   * @brief Returns one-past last iterator which iterates over all fields simulatenously
    */
   inline auto cend() const { return view().end(); }
 
@@ -856,6 +856,132 @@ public:
   template <typename ValueT> inline const ValueT* cend() const
   {
     return BasicMultiFieldArray::template begin<ValueT>() + size_;
+  }
+
+  /**
+   * @brief Returns first reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) rbegin() { return reverse_iterator_adapter{std::prev(end())}; }
+
+  /**
+   * @brief Returns one-past last reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) rend() { return reverse_iterator_adapter{std::prev(begin())}; }
+
+  /**
+   * @brief Returns first reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) rbegin() const { return reverse_iterator_adapter{std::prev(end())}; }
+
+  /**
+   * @brief Returns one-past last reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) rend() const { return reverse_iterator_adapter{std::prev(begin())}; }
+
+  /**
+   * @brief Returns first reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) crbegin() const { return reverse_iterator_adapter{std::prev(end())}; }
+
+  /**
+   * @brief Returns one-past last reverse iterator which iterates over all fields simulatenously
+   */
+  inline decltype(auto) crend() const { return reverse_iterator_adapter{std::prev(begin())}; }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) rbegin()
+  {
+    return reverse_iterator_adapter{std::prev(end<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) rbegin()
+  {
+    return reverse_iterator_adapter{std::prev(end<ValueT>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) rbegin() const
+  {
+    return reverse_iterator_adapter{std::prev(end<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) rbegin() const
+  {
+    return reverse_iterator_adapter{std::prev(end<ValueT>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) crbegin() const
+  {
+    return reverse_iterator_adapter{std::prev(end<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to first element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) crbegin() const
+  {
+    return reverse_iterator_adapter{std::prev(end<ValueT>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to one past last element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) rend()
+  {
+    return reverse_iterator_adapter{std::prev(begin<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to one past last element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) rend()
+  {
+    return reverse_iterator_adapter{std::prev(begin<ValueT>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to one past last element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) rend() const
+  {
+    return reverse_iterator_adapter{std::prev(begin<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator  to one past last element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) rend() const
+  {
+    return reverse_iterator_adapter{std::prev(begin<ValueT>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to one past last element in a particular field sub-array
+   */
+  template <std::size_t Index> inline decltype(auto) crend() const
+  {
+    return reverse_iterator_adapter{std::prev(begin<Index>())};
+  }
+
+  /**
+   * @brief Returns reverse iterator to one past last element in a particular field sub-array
+   */
+  template <typename ValueT> inline decltype(auto) crend() const
+  {
+    return reverse_iterator_adapter{std::prev(begin<ValueT>())};
   }
 
   /**

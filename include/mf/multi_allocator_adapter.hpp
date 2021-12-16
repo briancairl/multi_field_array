@@ -12,6 +12,7 @@
 
 // MF
 #include <mf/support/pointer_element_type.hpp>
+#include <mf/support/reverse_iterator_adapter.hpp>
 #include <mf/support/tuple_for_each.hpp>
 
 namespace mf
