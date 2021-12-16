@@ -377,6 +377,27 @@ public:
   }
 
   /**
+   * @brief Removes last element
+   */
+  inline decltype(auto) pop_back()
+  {
+    tuple_for_each(
+      [&](auto* const dptr) {
+        using ElementType = pointer_element_t<decltype(dptr)>;
+
+        // Destroy trailing element
+        if constexpr (!std::is_fundamental_v<ElementType>)
+        {
+          (dptr + size_ - 1)->~ElementType();
+        }
+      },
+      data_);
+
+    // Update effective element count
+    --size_;
+  }
+
+  /**
    * @brief Erases element at \c position
    *
    * @tparam PositionT  iterator or integer index type
