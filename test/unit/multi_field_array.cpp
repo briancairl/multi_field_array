@@ -960,6 +960,79 @@ TEST(MultiFieldArray, EraseIndex)
   }
 }
 
+TEST(MultiFieldArray, EraseRangeMiddle)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr =
+    multi_field_array.erase(std::next(multi_field_array.begin(), 5), std::next(multi_field_array.begin(), 8));
+  ASSERT_EQ(itr, std::next(multi_field_array.begin(), 5));
+
+  ASSERT_EQ(multi_field_array.size(), 7UL);
+
+  for (std::size_t i = 0; i < 7; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseRangeEnd)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr = multi_field_array.erase(std::next(multi_field_array.begin(), 5), multi_field_array.end());
+  ASSERT_EQ(itr, multi_field_array.end());
+
+  ASSERT_EQ(multi_field_array.size(), 5UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseRangeBegin)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto itr = multi_field_array.erase(multi_field_array.begin(), std::prev(multi_field_array.end(), 5));
+  ASSERT_EQ(itr, multi_field_array.begin());
+
+  ASSERT_EQ(multi_field_array.size(), 5UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
+TEST(MultiFieldArray, EraseRangeIndex)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  const auto pos = multi_field_array.erase(0UL, 5UL);
+  ASSERT_EQ(pos, 0);
+
+  ASSERT_EQ(multi_field_array.size(), 5UL);
+
+  for (std::size_t i = 0; i < 5; ++i)
+  {
+    const auto [vint, vstring] = multi_field_array.get<int, std::string>(i);
+    ASSERT_EQ(vint, 1);
+    ASSERT_EQ(vstring, "ok!");
+  }
+}
+
 TEST(MultiFieldArray, PopBack)
 {
   mf::multi_field_array<int, std::string> multi_field_array;
