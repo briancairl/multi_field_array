@@ -1086,3 +1086,145 @@ TEST(MultiFieldArray, MoveAssignment)
     ASSERT_EQ(s, "ok!");
   }
 }
+
+TEST(MultiFieldArray, ReverseIteratorDistance)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10, std::forward_as_tuple(1, "ok!"));
+
+  ASSERT_EQ(
+    static_cast<std::size_t>(std::distance(multi_field_array.rbegin(), multi_field_array.rend())),
+    multi_field_array.size());
+}
+
+TEST(MultiFieldArray, ReverseIteratorMulti)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.rbegin();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto [gi, gs] = multi_field_array.get<int, std::string>(10 - i - 1);
+    const auto [ri, rs] = (*ritr);
+    ASSERT_EQ(gi, ri);
+    ASSERT_EQ(gs, rs);
+  }
+}
+
+TEST(MultiFieldArray, ConstReverseIteratorMulti)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.crbegin();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto [gi, gs] = multi_field_array.get<int, std::string>(10 - i - 1);
+    const auto [ri, rs] = (*ritr);
+    ASSERT_EQ(gi, ri);
+    ASSERT_EQ(gs, rs);
+  }
+
+  ASSERT_TRUE(std::equal(multi_field_array.rbegin(), multi_field_array.rend(), multi_field_array.crbegin()));
+  ASSERT_TRUE(std::equal(multi_field_array.crbegin(), multi_field_array.crend(), multi_field_array.rbegin()));
+}
+
+TEST(MultiFieldArray, ReverseIteratorSingleTyped)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.rbegin<int>();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto gi = multi_field_array.get<int>(10 - i - 1);
+    ASSERT_EQ(gi, *ritr);
+  }
+}
+
+TEST(MultiFieldArray, ConstReverseIteratorSingleTyped)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.crbegin<int>();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto gi = multi_field_array.get<int>(10 - i - 1);
+    ASSERT_EQ(gi, *ritr);
+  }
+
+  ASSERT_TRUE(
+    std::equal(multi_field_array.rbegin<int>(), multi_field_array.rend<int>(), multi_field_array.crbegin<int>()));
+  ASSERT_TRUE(
+    std::equal(multi_field_array.crbegin<int>(), multi_field_array.crend<int>(), multi_field_array.rbegin<int>()));
+}
+
+TEST(MultiFieldArray, ReverseIteratorSingleIndex)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.rbegin<0>();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto gi = multi_field_array.get<int>(10 - i - 1);
+    ASSERT_EQ(gi, *ritr);
+  }
+}
+
+TEST(MultiFieldArray, ConstReverseIteratorSingleIndex)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+
+  for (int i = 0; i < 10; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  auto ritr = multi_field_array.crbegin<0>();
+  for (int i = 0; i < 10; ++i, ++ritr)
+  {
+    const auto gi = multi_field_array.get<int>(10 - i - 1);
+    ASSERT_EQ(gi, *ritr);
+  }
+
+  ASSERT_TRUE(std::equal(multi_field_array.rbegin<0>(), multi_field_array.rend<0>(), multi_field_array.crbegin<0>()));
+  ASSERT_TRUE(std::equal(multi_field_array.crbegin<0>(), multi_field_array.crend<0>(), multi_field_array.rbegin<0>()));
+}
+
+TEST(MultiFieldArray, ReverseIteratorAssignment)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10};
+
+  std::for_each(multi_field_array.rbegin(), multi_field_array.rend(), [](auto tup) {
+    std::get<0>(tup) = 9;
+    std::get<1>(tup) = "ok!";
+  });
+
+  std::for_each(multi_field_array.rbegin(), multi_field_array.rend(), [](auto tup) {
+    ASSERT_EQ(std::get<0>(tup), 9);
+    ASSERT_EQ(std::get<1>(tup), "ok!");
+  });
+}
