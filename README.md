@@ -152,15 +152,6 @@ Allocation_Many_Fields_Vec                       35104 ns        35104 ns       
 ================================================================================
 ```
 
-# Inspiration
-
-The `MultiFieldArray` is sort of like a very (very) simple Entity-component system (ECS). Unlike a pratical ECS, all component types need to be known "ahead of time" when defining a concrete multi-field array type. Additionally, memory will be allocated to hold all components for all enitities, whether you need it or not.
-
-In this sense, it implements a "special case" ECS with the absolute minimal access indirection. Since there are many cases where allocating for all components at once is actually necessary, it made sense to implement even though there are other more general purposes libraries out there.
-
-For a truer, "swiss army knife," ECS check out the outstanding [Entt](https://github.com/skypjack/entt) library.
-
-
 # TODOs
 
 - [x] Add "single allocation" strategy option, which will allocate all field memory at once, rather than with separate allocation calls
