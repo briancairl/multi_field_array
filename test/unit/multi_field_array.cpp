@@ -1044,3 +1044,35 @@ TEST(MultiFieldArray, ImmutableBackAccessAll)
   ASSERT_EQ(i, 1);
   ASSERT_EQ(s, "ok!");
 }
+
+
+TEST(MultiFieldArray, CopyAssignment)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  mf::multi_field_array<int, std::string> assign_to;
+  ASSERT_EQ(assign_to.size(), 0UL);
+
+  assign_to = multi_field_array;
+
+  ASSERT_EQ(assign_to.size(), 10UL);
+
+  ASSERT_TRUE(std::equal(assign_to.begin(), assign_to.end(), multi_field_array.begin()));
+}
+
+TEST(MultiFieldArray, MoveAssignment)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10, std::forward_as_tuple(1, "ok!")};
+  mf::multi_field_array<int, std::string> assign_to;
+  ASSERT_EQ(assign_to.size(), 0UL);
+
+  assign_to = std::move(multi_field_array);
+
+  ASSERT_EQ(multi_field_array.size(), 0UL);
+  ASSERT_EQ(assign_to.size(), 10UL);
+
+  for (const auto [i, s] : assign_to)
+  {
+    ASSERT_EQ(i, 1);
+    ASSERT_EQ(s, "ok!");
+  }
+}
