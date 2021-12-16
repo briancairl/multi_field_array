@@ -402,7 +402,7 @@ public:
    *
    * @tparam PositionT  iterator or integer index type
    *
-   * @param position  iterator or index to insert before
+   * @param position  iterator or index to erase
    *
    * @return iterator to new element following position after erasure
    */
@@ -434,6 +434,55 @@ public:
     --size_;
 
     return BasicMultiFieldArray::at_offset(position, position_as_offset);
+  }
+
+  /**
+   * @brief Erases element at \c position
+   *
+   * @tparam PositionT  iterator or integer index type
+   *
+   * @param first  iterator of first element to erase
+   * @param last  one past last iterator of last element to erase
+   *
+   * @return iterator to new element following position after erasure
+   *
+   * @warn last >= first
+   */
+  template <typename PositionT> inline decltype(auto) erase(PositionT first, PositionT last)
+  {
+    if (first == last)
+    {
+      return last;
+    }
+
+    // Get element offset
+    /*const*/ std::ptrdiff_t first_as_offset = BasicMultiFieldArray::get_offset(first);
+    /*const*/ std::ptrdiff_t last_as_offset = BasicMultiFieldArray::get_offset(last);
+    const std::ptrdiff_t distance = last_as_offset - first_as_offset;
+
+    // Shift all existing elements rightward to make room for newly inserted elements
+    tuple_for_each(
+      [&](auto* const dptr) {
+        using ElementType = pointer_element_t<decltype(dptr)>;
+
+        // Location of the first element to be erased
+        auto* const element_ptr = dptr + first_as_offset;
+
+        // Copy elements after erased element
+        std::move(element_ptr + distance, dptr + size_, element_ptr);
+
+        // Destroy trailing elements
+        if constexpr (!std::is_fundamental_v<ElementType>)
+        {
+          std::for_each(dptr + last_as_offset, dptr + size_, [](auto& e) { e.~ElementType(); });
+        }
+      },
+      data_);
+
+    // Update effective element count
+    size_ -= distance;
+
+    return BasicMultiFieldArray::at_offset(first, first_as_offset);
   }
 
   /**
