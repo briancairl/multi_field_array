@@ -806,6 +806,16 @@ public:
   template <typename ValueT> inline const ValueT* data() const { return std::get<ValueT*>(data_); }
 
   /**
+   * @brief Return start pointers to all sub arrays
+   */
+  inline std::tuple<Ts*...> data() { return data_; }
+
+  /**
+   * @brief Return start pointers to all sub arrays
+   */
+  inline std::tuple<const Ts*...> data() const { return data_; }
+
+  /**
    * @brief Returns first iterator which iterates over all fields simulatenously
    */
   inline auto begin() { return view().begin(); }
