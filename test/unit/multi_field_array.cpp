@@ -1315,3 +1315,24 @@ TEST(MultiFieldArray, ReverseIteratorArrowOperator)
     << *std::prev(multi_field_array.rend<std::string>());
   ASSERT_EQ(multi_field_array.rbegin<std::string>()->size(), 2UL) << *multi_field_array.rbegin<std::string>();
 }
+
+TEST(MultiFieldArray, DirectPointAccess)
+{
+  mf::multi_field_array<int, std::string> multi_field_array;
+  multi_field_array.resize(10);
+
+  auto data_ptr_tuple = multi_field_array.data();
+
+  ASSERT_EQ(std::get<0>(data_ptr_tuple), multi_field_array.data<0>());
+  ASSERT_EQ(std::get<1>(data_ptr_tuple), multi_field_array.data<1>());
+}
+
+TEST(MultiFieldArray, ConstDirectPointAccess)
+{
+  const mf::multi_field_array<int, std::string> multi_field_array{10};
+
+  const auto data_ptr_tuple = multi_field_array.data();
+
+  ASSERT_EQ(std::get<0>(data_ptr_tuple), multi_field_array.data<0>());
+  ASSERT_EQ(std::get<1>(data_ptr_tuple), multi_field_array.data<1>());
+}
