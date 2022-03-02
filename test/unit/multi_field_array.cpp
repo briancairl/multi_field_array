@@ -1387,3 +1387,33 @@ TEST(MultiFieldArray, BackInserterCopy)
     multi_field_array.end<std::string>(),
     multi_field_array_copy_target.cbegin<std::string>()));
 }
+
+TEST(MultiFieldArray, Swap)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10};
+
+  for (int i = 0; i < 11; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  const auto expected_pointer_values = multi_field_array.data();
+  const auto multi_field_array_swap_expected{multi_field_array};
+
+  mf::multi_field_array<int, std::string> multi_field_array_swap_target;
+  multi_field_array_swap_target.swap(multi_field_array);
+
+  ASSERT_EQ(expected_pointer_values, multi_field_array_swap_target.data());
+
+  ASSERT_EQ(multi_field_array_swap_expected.size(), multi_field_array_swap_target.size());
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array_swap_expected.begin<int>(),
+    multi_field_array_swap_expected.end<int>(),
+    multi_field_array_swap_target.cbegin<int>()));
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array_swap_expected.begin<std::string>(),
+    multi_field_array_swap_expected.end<std::string>(),
+    multi_field_array_swap_target.cbegin<std::string>()));
+}
