@@ -1336,3 +1336,54 @@ TEST(MultiFieldArray, ConstDirectPointAccess)
   ASSERT_EQ(std::get<0>(data_ptr_tuple), multi_field_array.data<0>());
   ASSERT_EQ(std::get<1>(data_ptr_tuple), multi_field_array.data<1>());
 }
+
+TEST(MultiFieldArray, PushBackCopy)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10};
+
+  for (int i = 0; i < 11; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  mf::multi_field_array<int, std::string> multi_field_array_copy_target;
+
+  for (const auto& v : multi_field_array)
+  {
+    multi_field_array_copy_target.push_back(v);
+  }
+
+  ASSERT_EQ(multi_field_array.size(), multi_field_array_copy_target.size());
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array.begin<int>(), multi_field_array.end<int>(), multi_field_array_copy_target.cbegin<int>()));
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array.begin<std::string>(),
+    multi_field_array.end<std::string>(),
+    multi_field_array_copy_target.cbegin<std::string>()));
+}
+
+TEST(MultiFieldArray, BackInserterCopy)
+{
+  mf::multi_field_array<int, std::string> multi_field_array{10};
+
+  for (int i = 0; i < 11; ++i)
+  {
+    multi_field_array.emplace_back(i, std::to_string(i));
+  }
+
+  mf::multi_field_array<int, std::string> multi_field_array_copy_target;
+
+  std::copy(multi_field_array.begin(), multi_field_array.end(), std::back_inserter(multi_field_array_copy_target));
+
+  ASSERT_EQ(multi_field_array.size(), multi_field_array_copy_target.size());
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array.begin<int>(), multi_field_array.end<int>(), multi_field_array_copy_target.cbegin<int>()));
+
+  ASSERT_TRUE(std::equal(
+    multi_field_array.begin<std::string>(),
+    multi_field_array.end<std::string>(),
+    multi_field_array_copy_target.cbegin<std::string>()));
+}

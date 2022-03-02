@@ -34,7 +34,7 @@ public:
   using allocator_adapter_type = BasicMultiAllocatorAdapter<std::tuple<Ts...>, AllocatorTs>;
 
   /// Tuple of field value types
-  using value_types = std::tuple<Ts...>;
+  using value_type = std::tuple<Ts...>;
 
   /**
    * @brief Default constructor
@@ -379,7 +379,7 @@ public:
   /**
    * @brief Removes last element
    */
-  inline decltype(auto) pop_back()
+  inline void pop_back()
   {
     tuple_for_each(
       [&](auto* const dptr) {
@@ -621,6 +621,14 @@ public:
 
     // Increment the known size of the buffers in terms of effective elements
     ++size_;
+  }
+
+  /**
+   * @brief Creates a new element at the end of the array(s)
+   */
+  void push_back(const value_type& value)
+  {
+    std::apply([this](const auto&... fields) { this->emplace_back(fields...); }, value);
   }
 
   /**
@@ -1064,9 +1072,9 @@ public:
   /**
    * @copydoc view
    */
-  template <std::size_t... Indices> View<tuple_select_t<value_types, Indices...>> view()
+  template <std::size_t... Indices> View<tuple_select_t<value_type, Indices...>> view()
   {
-    return View<tuple_select_t<value_types, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...), size_};
+    return View<tuple_select_t<value_type, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...), size_};
   }
 
   /**
@@ -1086,10 +1094,10 @@ public:
   /**
    * @copydoc view
    */
-  template <std::size_t... Indices> View<const_tuple_select_t<value_types, Indices...>> view() const
+  template <std::size_t... Indices> View<const_tuple_select_t<value_type, Indices...>> view() const
   {
-    return View<const_tuple_select_t<value_types, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...),
-                                                               size_};
+    return View<const_tuple_select_t<value_type, Indices...>>{std::forward_as_tuple(std::get<Indices>(data_)...),
+                                                              size_};
   }
 
   /**
