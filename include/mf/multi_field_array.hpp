@@ -178,6 +178,18 @@ public:
   }
 
   /**
+   * @brief Exchanges the contents of the container with those of other
+   *
+   *        Does not invoke any move, copy, or swap operations on individual elements
+   */
+  inline void swap(BasicMultiFieldArray& other)
+  {
+    std::swap(other.data_, this->data_);
+    std::swap(other.size_, this->size_);
+    std::swap(other.capacity_, this->capacity_);
+  }
+
+  /**
    * @brief Returns references to values at index for each specified field type
    *
    * @returns A tuple of references to fields if multiple types are specified, otherwise,
