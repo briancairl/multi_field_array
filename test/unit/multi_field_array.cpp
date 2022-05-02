@@ -1421,7 +1421,7 @@ TEST(MultiFieldArray, Swap)
 #include <memory>  // std::unique_ptr
 #include <mutex>  // std::mutex
 
-TEST(MultiFieldArray, MoveOnlyType)
+TEST(MultiFieldArray, MoveOnlyTypeExplaceBack)
 {
   mf::multi_field_array<int, std::unique_ptr<std::mutex>> move_only_sequence;
   move_only_sequence.reserve(4);
@@ -1430,6 +1430,20 @@ TEST(MultiFieldArray, MoveOnlyType)
   ASSERT_EQ(move_only_sequence.capacity(), 4UL);
 
   move_only_sequence.resize(4);
-  ASSERT_EQ(move_only_sequence.size(), 4UL);
+  move_only_sequence.emplace_back(0, std::make_unique<std::mutex>());
+  ASSERT_EQ(move_only_sequence.size(), 5UL);
+}
+
+TEST(MultiFieldArray, MoveOnlyTypeExplaceBackPiecewise)
+{
+  mf::multi_field_array<int, std::unique_ptr<std::mutex>> move_only_sequence;
+  move_only_sequence.reserve(4);
+
+  ASSERT_EQ(move_only_sequence.size(), 0UL);
   ASSERT_EQ(move_only_sequence.capacity(), 4UL);
+
+  move_only_sequence.resize(4);
+  move_only_sequence.emplace_back(
+    std::piecewise_construct, std::forward_as_tuple(0), std::forward_as_tuple(std::make_unique<std::mutex>()));
+  ASSERT_EQ(move_only_sequence.size(), 5UL);
 }

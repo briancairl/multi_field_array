@@ -15,6 +15,7 @@
 // MF
 #include <mf/multi_allocator_adapter.hpp>
 #include <mf/multi_field_array_fwd.hpp>
+#include <mf/support/placement_new.hpp>
 #include <mf/support/pointer_element_type.hpp>
 #include <mf/support/tuple_for_each.hpp>
 #include <mf/support/tuple_select.hpp>
@@ -556,9 +557,7 @@ public:
         // Call constructor for non-fundamental types
         else
         {
-          // TODO(fixup) Does the result in the same code as constructing in-place?
-          new (ptr + s)
-            ElementType{std::make_from_tuple<ElementType>(std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple))};
+          mf::apply_placement_new<ElementType>(ptr + s, std::forward<decltype(ctor_arg_tuple)>(ctor_arg_tuple));
         }
       },
       data_,
@@ -610,7 +609,7 @@ public:
           }
           else
           {
-            new (ptr + s) ElementType{std::forward<decltype(ctor_arg)>(ctor_arg)};
+            new (ptr + s) ElementType{std::forward<std::remove_reference_t<decltype(ctor_arg)>>(ctor_arg)};
           }
         },
         data_,

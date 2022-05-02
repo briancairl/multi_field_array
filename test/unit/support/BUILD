@@ -7,3 +7,11 @@ gtest(
   deps=["//:support"],
   visibility=["//visibility:public"],
 )
+
+gtest(
+  name="apply_placement_new",
+  timeout = "short",
+  srcs=["apply_placement_new.cpp"],
+  deps=["//:support"],
+  visibility=["//visibility:public"],
+)
