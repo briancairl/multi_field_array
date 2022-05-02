@@ -1417,3 +1417,19 @@ TEST(MultiFieldArray, Swap)
     multi_field_array_swap_expected.end<std::string>(),
     multi_field_array_swap_target.cbegin<std::string>()));
 }
+
+#include <memory>  // std::unique_ptr
+#include <mutex>  // std::mutex
+
+TEST(MultiFieldArray, MoveOnlyType)
+{
+  mf::multi_field_array<int, std::unique_ptr<std::mutex>> move_only_sequence;
+  move_only_sequence.reserve(4);
+
+  ASSERT_EQ(move_only_sequence.size(), 0UL);
+  ASSERT_EQ(move_only_sequence.capacity(), 4UL);
+
+  move_only_sequence.resize(4);
+  ASSERT_EQ(move_only_sequence.size(), 4UL);
+  ASSERT_EQ(move_only_sequence.capacity(), 4UL);
+}
